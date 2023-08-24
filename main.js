@@ -34,11 +34,21 @@ const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.inner
 const renderer = new THREE.WebGLRenderer();
 let labelRenderer = new CSS2DRenderer();
 let container = document.getElementById('glContainer');
+let raycaster;
+const pointer = new THREE.Vector2();
+let INTERSECTED;
+
+function onPointerMove( event ) {
+
+    pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+}
 
 function main()
 {
     const scene = new THREE.Scene();
-    
+    raycaster = new THREE.Raycaster();
     camera.position.y = 10;
 
     
@@ -63,6 +73,29 @@ function main()
         requestAnimationFrame( animate );
         controls.update();  
 
+        raycaster.setFromCamera( pointer, camera );
+        const intersects = raycaster.intersectObjects( scene.children, false );
+        if ( intersects.length > 0 ) {
+
+            if ( INTERSECTED != intersects[ 0 ].object ) {
+
+                if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+                INTERSECTED = intersects[ 0 ].object;
+                INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+                INTERSECTED.material.color.setHex( 0x888800 );
+
+            }
+
+        } else {
+
+            if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+            INTERSECTED = null;
+
+        }
+
+
         renderer.render( scene, camera );
         labelRenderer.render( scene, camera );
     }
@@ -79,7 +112,7 @@ function onWindowResize() {
     labelRenderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-
+document.addEventListener( 'mousemove', onPointerMove );
 window.addEventListener("load", (event) => {
     main();
   });
