@@ -1,0 +1,8 @@
+.label {
+    color: #ffffff;
+    font-family: sans-serif;
+}
+.label:hover{
+    color: red;
+}
+/* body { margin: 0; } */
