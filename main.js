@@ -7,24 +7,22 @@ function on_label_click(name)
     console.log("clicked, name: " + name);
 }
 
-function add_sphere(scene, position, color)
+function add_sphere(scene, position, color, name)
 {
     const star_radius = 0.5;
     const geometry = new THREE.SphereGeometry( star_radius, 32, 16 );
     const material = new THREE.MeshBasicMaterial( { color: color } );
     const cube = new THREE.Mesh( geometry, material );
 
-    const moonDiv = document.createElement( 'div' );
-    moonDiv.addEventListener('click', function(){on_label_click("test123")} );
-    moonDiv.className = 'label';
-    moonDiv.textContent = "test 456";
-    // moonDiv.style.marginTop = '-0.5em';
-    const moonLabel = new CSS2DObject( moonDiv );
-    const up_vec = new THREE.Vector3(0, 0, -1);
+    const text_div_el = document.createElement( 'div' );
+    text_div_el.addEventListener('click', function(){on_label_click(name)} );
+    text_div_el.className = 'label';
+    text_div_el.textContent = name;
+    const css2_object = new CSS2DObject( text_div_el );
     
-    moonLabel.position.set( up_vec.x*star_radius, up_vec.y*star_radius, up_vec.z*star_radius );
-    moonLabel.center.set( 0.5, 0.5 );
-    cube.add( moonLabel );
+    css2_object.position.set( 0, 0, -star_radius );
+    css2_object.center.set( 0.5, 0.5 );
+    cube.add( css2_object );
     
     cube.position.set(position.x, position.y, position.z);
     scene.add( cube );
@@ -39,10 +37,8 @@ const pointer = new THREE.Vector2();
 let INTERSECTED;
 
 function onPointerMove( event ) {
-
     pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
     pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
 }
 
 function main()
@@ -64,10 +60,8 @@ function main()
     controls.enableDamping = true;
     controls.enableRotate = false;
 
-    add_sphere(scene, new THREE.Vector3(0,0,0), 0x808080);
-    add_sphere(scene, new THREE.Vector3(1,0,0), 0xff0000);
-    add_sphere(scene, new THREE.Vector3(0,1,0), 0x00ff00);
-    add_sphere(scene, new THREE.Vector3(0,0,1), 0x0000ff);
+    add_sphere(scene, new THREE.Vector3(1,0,0), 0xff0000, "first");
+    add_sphere(scene, new THREE.Vector3(0,0,1), 0x0000ff, "second");
 
     function animate() {
         requestAnimationFrame( animate );
