@@ -71,8 +71,8 @@ function main()
     controls.zoomToCursor = true;
     controls.enableDamping = false;
 
-    add_sphere(scene, new THREE.Vector3(1,0,0), 0xff807d, "first");
-    add_sphere(scene, new THREE.Vector3(0,0,1), 0xff807d, "second");
+    add_sphere(scene, new THREE.Vector3(1,0,0), 0xff807d, "ALPHA CENTAURI");
+    add_sphere(scene, new THREE.Vector3(0,0,1), 0xff807d, "PORRIMA");
 
     function animate() {
         requestAnimationFrame( animate );

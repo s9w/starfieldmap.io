@@ -1,6 +1,6 @@
 .label {
     color: #ffffff;
-    font-family: sans-serif;
+    font-family: 'profontwindowsregular'
 }
 .label:hover{
     color: red;
