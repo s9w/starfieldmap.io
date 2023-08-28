@@ -5,4 +5,13 @@
 .label:hover{
     color: red;
 }
+body{
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+#glContainer{
+    flex-grow: 1;
+    position: relative;
+}
 /* body { margin: 0; } */
