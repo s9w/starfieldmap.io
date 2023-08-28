@@ -29,8 +29,8 @@ function add_sphere(scene, position, color, name)
     text_div_el.textContent = name;
     const css2_object = new CSS2DObject( text_div_el );
     
-    css2_object.position.set( 0, 0, -star_radius );
-    css2_object.center.set( 0.5, 0.5 );
+    css2_object.position.set( star_radius, 0, 0 );
+    css2_object.center.set( 0.0, 0.5 );
     cube.add( css2_object );
     
     cube.position.set(position.x, position.y, position.z);
@@ -55,7 +55,6 @@ function main()
     const scene = new THREE.Scene();
     raycaster = new THREE.Raycaster();
     camera.position.y = 10;
-
     
     labelRenderer.setSize( container.clientWidth, container.clientHeight );
     labelRenderer.domElement.style.position = 'absolute';
