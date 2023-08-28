@@ -12,6 +12,9 @@ function add_sphere(scene, position, color, name)
     const star_radius = 0.5;
     const geometry = new THREE.SphereGeometry( star_radius, 32, 16 );
     const material = new THREE.MeshBasicMaterial( { color: color } );
+    material.transparent = true;
+    material.opacity = 0.5;
+
     const cube = new THREE.Mesh( geometry, material );
 
     const text_div_el = document.createElement( 'div' );
@@ -62,8 +65,8 @@ function main()
     controls.zoomToCursor = true;
     controls.enableDamping = false;
 
-    add_sphere(scene, new THREE.Vector3(1,0,0), 0xff0000, "first");
-    add_sphere(scene, new THREE.Vector3(0,0,1), 0x0000ff, "second");
+    add_sphere(scene, new THREE.Vector3(1,0,0), 0xff807d, "first");
+    add_sphere(scene, new THREE.Vector3(0,0,1), 0xff807d, "second");
 
     function animate() {
         requestAnimationFrame( animate );
