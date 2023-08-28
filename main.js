@@ -81,25 +81,18 @@ function main()
         raycaster.setFromCamera( pointer, camera );
         const intersects = raycaster.intersectObjects( scene.children, false );
         if ( intersects.length > 0 ) {
-
             if ( INTERSECTED != intersects[ 0 ].object ) {
-
-                if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
-
+                if ( INTERSECTED )
+                    INTERSECTED.material.opacity = 0.5;
                 INTERSECTED = intersects[ 0 ].object;
-                INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-                INTERSECTED.material.color.setHex( 0x888800 );
-
+                INTERSECTED.material.opacity = 1.0;
             }
-
-        } else {
-
-            if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
-
-            INTERSECTED = null;
-
         }
-
+        else {
+            if ( INTERSECTED )
+                INTERSECTED.material.opacity = 0.5;
+            INTERSECTED = null;
+        }
 
         renderer.render( scene, camera );
         labelRenderer.render( scene, camera );
