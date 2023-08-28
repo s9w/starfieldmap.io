@@ -2,9 +2,36 @@ import * as THREE from 'three';
 import { MapControls } from 'three/addons/controls/MapControls.js';
 import { CSS2DRenderer, CSS2DObject  } from 'three/addons/renderers/CSS2DRenderer.js';
 
+let name_to_obj = {};
+
+function highlight_obj(obj, with_label){
+    obj.material.opacity = 1.0;
+    if(with_label)
+    {
+        let label_div = obj.children[0].element;
+        label_div.classList.add("forcedhover");
+    }
+}
+function unhighlight_obj(obj, with_label){
+    obj.material.opacity = 0.5;
+    if(with_label)
+    {
+        let label_div = obj.children[0].element;
+        label_div.classList.remove("forcedhover");
+    }
+}
+
 function on_label_click(name)
 {
     console.log("clicked, name: " + name);
+}
+function on_label_mouseover(name)
+{
+    highlight_obj(name_to_obj[name], false);
+}
+function on_label_mouseout(name)
+{
+    unhighlight_obj(name_to_obj[name], false);
 }
 
 function on_container_click()
@@ -12,6 +39,8 @@ function on_container_click()
     if(INTERSECTED !== null)
         console.log("container clicked while on something");
 }
+
+
 
 function add_sphere(scene, position, color, name)
 {
@@ -26,16 +55,19 @@ function add_sphere(scene, position, color, name)
 
     const text_div_el = document.createElement( 'div' );
     text_div_el.addEventListener('click', function(){on_label_click(name)} );
+    text_div_el.addEventListener('mouseover', function(){on_label_mouseover(name)} );
+    text_div_el.addEventListener('mouseout', function(){on_label_mouseout(name)} );
     text_div_el.className = 'label';
     text_div_el.textContent = name;
     const css2_object = new CSS2DObject( text_div_el );
     
-    css2_object.position.set( star_radius, 0, 0 );
+    css2_object.position.set( 1.5 * star_radius, 0, 0 );
     css2_object.center.set( 0.0, 0.5 );
     sprite.add( css2_object );
     
     sprite.position.set(position.x, position.y, position.z);
     scene.add( sprite );
+    name_to_obj[name] = sprite;
 }
 
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -83,14 +115,18 @@ function main()
         if ( intersects.length > 0 ) {
             if ( INTERSECTED != intersects[ 0 ].object ) {
                 if ( INTERSECTED )
-                    INTERSECTED.material.opacity = 0.5;
+                {
+                    unhighlight_obj(INTERSECTED, true);
+                }
                 INTERSECTED = intersects[ 0 ].object;
-                INTERSECTED.material.opacity = 1.0;
+                highlight_obj(INTERSECTED, true)
             }
         }
         else {
             if ( INTERSECTED )
-                INTERSECTED.material.opacity = 0.5;
+            {
+                unhighlight_obj(INTERSECTED, true);
+            }
             INTERSECTED = null;
         }
 
