@@ -37,8 +37,8 @@ const pointer = new THREE.Vector2();
 let INTERSECTED;
 
 function onPointerMove( event ) {
-    pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    pointer.x = ( event.offsetX / container.clientWidth ) * 2 - 1;
+    pointer.y = - ( event.offsetY / container.clientHeight ) * 2 + 1;
 }
 
 function main()
@@ -60,6 +60,7 @@ function main()
     controls.enableDamping = true;
     controls.enableRotate = false;
     controls.zoomToCursor = true;
+    controls.enableDamping = false;
 
     add_sphere(scene, new THREE.Vector3(1,0,0), 0xff0000, "first");
     add_sphere(scene, new THREE.Vector3(0,0,1), 0x0000ff, "second");
