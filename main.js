@@ -59,6 +59,7 @@ function main()
     const controls = new MapControls( camera, labelRenderer.domElement );
     controls.enableDamping = true;
     controls.enableRotate = false;
+    controls.zoomToCursor = true;
 
     add_sphere(scene, new THREE.Vector3(1,0,0), 0xff0000, "first");
     add_sphere(scene, new THREE.Vector3(0,0,1), 0x0000ff, "second");
