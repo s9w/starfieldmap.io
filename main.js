@@ -86,6 +86,7 @@ function onPointerMove( event ) {
 function main()
 {
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0x111b22 );
     raycaster = new THREE.Raycaster();
     camera.position.y = 20;
     
