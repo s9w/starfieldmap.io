@@ -16,12 +16,13 @@ function on_container_click()
 function add_sphere(scene, position, color, name)
 {
     const star_radius = 0.5;
-    const geometry = new THREE.SphereGeometry( star_radius, 32, 16 );
-    const material = new THREE.MeshBasicMaterial( { color: color } );
-    material.transparent = true;
-    material.opacity = 0.5;
 
-    const cube = new THREE.Mesh( geometry, material );
+    const map = new THREE.TextureLoader().load( 'circle.png' );
+    const material = new THREE.SpriteMaterial( { map: map, color: 0xff807d  } );
+    material.transparent = true;
+    material.opacity = 1;
+
+    const sprite = new THREE.Sprite( material );
 
     const text_div_el = document.createElement( 'div' );
     text_div_el.addEventListener('click', function(){on_label_click(name)} );
@@ -31,10 +32,10 @@ function add_sphere(scene, position, color, name)
     
     css2_object.position.set( star_radius, 0, 0 );
     css2_object.center.set( 0.0, 0.5 );
-    cube.add( css2_object );
+    sprite.add( css2_object );
     
-    cube.position.set(position.x, position.y, position.z);
-    scene.add( cube );
+    sprite.position.set(position.x, position.y, position.z);
+    scene.add( sprite );
 }
 
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
