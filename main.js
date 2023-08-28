@@ -55,7 +55,7 @@ function main()
 {
     const scene = new THREE.Scene();
     raycaster = new THREE.Raycaster();
-    camera.position.y = 10;
+    camera.position.y = 20;
     
     labelRenderer.setSize( container.clientWidth, container.clientHeight );
     labelRenderer.domElement.style.position = 'absolute';
@@ -72,7 +72,7 @@ function main()
     controls.enableDamping = false;
 
     add_sphere(scene, new THREE.Vector3(1,0,0), 0xff807d, "ALPHA CENTAURI");
-    add_sphere(scene, new THREE.Vector3(0,0,1), 0xff807d, "PORRIMA");
+    add_sphere(scene, new THREE.Vector3(0,1,1), 0xff807d, "PORRIMA");
 
     function animate() {
         requestAnimationFrame( animate );
