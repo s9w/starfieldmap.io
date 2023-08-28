@@ -5,6 +5,7 @@
 
 .label {
     color: #ffffff;
+    text-transform: uppercase;
     font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;;
     font-size: larger;
     padding-left: 0.5em;

@@ -103,9 +103,10 @@ function main()
     controls.enableRotate = false;
     controls.zoomToCursor = true;
     controls.enableDamping = false;
+    controls.zoomSpeed = 2.0;
 
-    add_sphere(scene, new THREE.Vector3(1,0,0), 0xff807d, "ALPHA CENTAURI");
-    add_sphere(scene, new THREE.Vector3(0,1,1), 0xff807d, "PORRIMA");
+    add_sphere(scene, new THREE.Vector3(0,0,0), 0xff807d, "Alpha Centauri");
+    add_sphere(scene, new THREE.Vector3(50,1,1), 0xff807d, "Porrima");
 
     function animate() {
         requestAnimationFrame( animate );
