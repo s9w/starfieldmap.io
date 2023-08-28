@@ -7,6 +7,12 @@ function on_label_click(name)
     console.log("clicked, name: " + name);
 }
 
+function on_container_click()
+{
+    if(INTERSECTED !== null)
+        console.log("container clicked while on something");
+}
+
 function add_sphere(scene, position, color, name)
 {
     const star_radius = 0.5;
@@ -111,6 +117,7 @@ function onWindowResize() {
     labelRenderer.setSize( window.innerWidth, window.innerHeight );
 }
 
+container.addEventListener( 'click', on_container_click );
 document.addEventListener( 'mousemove', onPointerMove );
 window.addEventListener("load", (event) => {
     main();
