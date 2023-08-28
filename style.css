@@ -1,6 +1,11 @@
+@font-face {
+    font-family: "ProFontWindows V1";
+    src: url("ProFontWindows V1.woff2")format("woff2")
+}
+
 .label {
     color: #ffffff;
-    font-family: 'profontwindowsregular';
+    font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;;
     padding-left: 0.5em;
     padding-right: 0.5em;
 }
