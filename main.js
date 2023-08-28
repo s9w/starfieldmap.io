@@ -29,7 +29,7 @@ function add_sphere(scene, position, color, name)
 }
 
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({antialias: true});
 let labelRenderer = new CSS2DRenderer();
 let container = document.getElementById('glContainer');
 let raycaster;
