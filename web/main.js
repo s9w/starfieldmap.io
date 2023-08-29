@@ -96,7 +96,7 @@ async function get_and_process_data(scene)
     const compressed = new Uint8Array(compressedBuf);
     var string = new TextDecoder().decode(fzstd.decompress(compressed));
     var payload = JSON.parse(string);
-    for (const [key, value] of Object.entries(payload))
+    for (const [key, value] of Object.entries(payload.stars))
     {
         add_sphere(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key);
     }
