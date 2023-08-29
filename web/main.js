@@ -15,6 +15,7 @@ let raycaster;
 const pointer = new THREE.Vector2(99, 99);
 let INTERSECTED;
 let system_data;
+let star_data;
 
 function click_home()
 {
@@ -27,7 +28,41 @@ function click_home()
     }
 }
 
+function get_new_elem(type, content="", classlist="")
+{
+    let result = document.createElement(type);
+    if(content)
+        result.textContent = content;
+    if(classlist)
+        result.classList = classlist;
+    return result;
+}
+
+function get_infobox_attrib_el(attrib_name, attrib_value)
+{
+    let row = get_new_elem("div");
+    row.appendChild(get_new_elem("div", attrib_name, "infobox_attrib_name"));
+    row.appendChild(get_new_elem("div", attrib_value, "infobox_attrib_value"));
+    return row;
+}
+
+function set_infobox_star(star_name, star_data)
+{
+    let infobox_el = document.getElementById("infobox");
+    infobox_el.textContent = "";
+    infobox_el.appendChild(get_new_elem("div", star_name, "infobox_name"));
+
+    let attrib_list_el = get_new_elem("div");
+    attrib_list_el.id = "infobox_list";
+    attrib_list_el.appendChild(get_infobox_attrib_el("SPECTRAL CLASS", star_data["spectral class"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("TEMPERATURE", `${star_data["temperature"]}K`));
+    attrib_list_el.appendChild(get_infobox_attrib_el("MASS", `${star_data["mass"]}SM`));
+    attrib_list_el.appendChild(get_infobox_attrib_el("RADIUS", star_data["radius"]));
+    infobox_el.appendChild(attrib_list_el);
+}
+
 function highlight_obj(obj, with_label){
+    set_infobox_star(obj.name, star_data[obj.name]);
     obj.material.opacity = 1.0;
     if(with_label)
     {
@@ -155,6 +190,7 @@ async function get_and_process_data(scene)
         add_sphere(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key);
     }
     system_data = payload.systems;
+    star_data = payload.stars;
 }
 
 function main()

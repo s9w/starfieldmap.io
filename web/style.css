@@ -7,7 +7,6 @@
     color: #ffffff;
     text-transform: uppercase;
     margin-left: 1em;
-    font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;
     font-size: larger;
     padding-left: 0.5em;
     padding-right: 0.5em;
@@ -19,13 +18,14 @@ body{
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;
 }
 #glContainer{
     flex-grow: 1;
     position: relative;
 }
 .nav_buttons{
-    font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;
+    
     font-size: x-large;
     color: white;
     background-color: #111b22;
@@ -48,4 +48,43 @@ body{
 }
 #home_button:hover{
     text-decoration: underline;
+}
+
+#infobox{
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #ffffffba;;
+    text-transform: uppercase;
+    width: 15em;
+
+    padding-top: 1em;
+    padding-bottom: 1em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+
+    border-color: rgba(255, 255, 255, 0.19);
+    border-style: solid;
+    border-width: 1px;
+}
+.infobox_name{
+    color: white;
+    font-size: x-large;
+}
+
+#infobox_list > div{
+    display: flex;
+    border-color: rgba(255, 255, 255, 0.13);
+    border-style: solid;
+    border-width: 1px;
+    margin-bottom: 2px;
+}
+
+#infobox_list > div>div:first-child{
+    background-color: rgba(255, 255, 255, 0.13);
+}
+#infobox_list > div>div:not(:first-child){
+    text-align: right;
+}
+#infobox_list > div > div{
+    flex: 1 1 0px;
 }
