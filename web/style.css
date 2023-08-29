@@ -27,9 +27,9 @@ body{
 .nav_buttons{
     font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;
     font-size: x-large;
-    position: absolute;
     color: white;
-    margin: 1em;
+    background-color: #111b22;
+    padding: 0.5em;
     display: flex;
     align-items: center;
 }
@@ -42,4 +42,10 @@ body{
 }
 #system_indicator:not(.active){
     display: none;
+}
+#home_button{
+    cursor: pointer;
+}
+#home_button:hover{
+    text-decoration: underline;
 }

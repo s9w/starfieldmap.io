@@ -16,6 +16,11 @@ let INTERSECTED;
 let last_universe_camera_pos;
 let system_data;
 
+function click_home()
+{
+    console.log("click_home()");
+}
+
 function highlight_obj(obj, with_label){
     obj.material.opacity = 1.0;
     if(with_label)
@@ -190,6 +195,7 @@ function main()
         labelRenderer.render( scene, camera );
     }
     window.addEventListener( 'resize', onWindowResize, false );
+    document.getElementById("home_button").addEventListener("click", click_home);
     onWindowResize();
     animate();
 }
