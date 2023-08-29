@@ -7,7 +7,7 @@
     color: #ffffff;
     text-transform: uppercase;
     margin-left: 1em;
-    font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;;
+    font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;
     font-size: larger;
     padding-left: 0.5em;
     padding-right: 0.5em;
@@ -23,4 +23,23 @@ body{
 #glContainer{
     flex-grow: 1;
     position: relative;
+}
+.nav_buttons{
+    font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;
+    font-size: x-large;
+    position: absolute;
+    color: white;
+    margin: 1em;
+    display: flex;
+    align-items: center;
+}
+.nav_buttons > div:not(:first-child)::before
+{
+    content: ">>";
+    opacity: 0.5;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+#system_indicator:not(.active){
+    display: none;
 }

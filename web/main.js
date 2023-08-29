@@ -24,6 +24,8 @@ function unhighlight_obj(obj, with_label){
 function activate_system(name)
 {
     console.log(`activate_system(${name})`);
+    document.getElementById("system_indicator").classList.add("active")
+    document.getElementById("system_indicator").textContent = name;
 }
 
 function on_label_click(name)
