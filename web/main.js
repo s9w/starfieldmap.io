@@ -4,6 +4,7 @@ import { CSS2DRenderer, CSS2DObject  } from 'three/addons/renderers/CSS2DRendere
 
 let scene;
 let name_to_obj = {};
+let controls;
 let star_group = new THREE.Group();
 let planets_group = new THREE.Group();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -13,12 +14,11 @@ let container = document.getElementById('glContainer');
 let raycaster;
 const pointer = new THREE.Vector2(99, 99);
 let INTERSECTED;
-let last_galaxy_camera_pos;
 let system_data;
 
 function click_home()
 {
-    camera.position.set(last_galaxy_camera_pos.x, last_galaxy_camera_pos.y, last_galaxy_camera_pos.z);
+    controls.reset();
     planets_group.clear();
     document.getElementById("system_indicator").classList.remove("active")
     for (const star of star_group.children) {
@@ -44,6 +44,14 @@ function unhighlight_obj(obj, with_label){
     }
 }
 
+function xy_zero_orbit_controls(orbit_controls, new_height)
+{
+    let cam = orbit_controls.object;
+    cam.position.set(0, cam.position.y, 0);
+    orbit_controls.target.set(0, new_height, 0);
+    orbit_controls.update();
+}
+
 function activate_system(name)
 {
     document.getElementById("system_indicator").classList.add("active")
@@ -52,8 +60,8 @@ function activate_system(name)
         star.visible = false;
         star.children[0].visible = false;
     }
-    last_galaxy_camera_pos = camera.position;
-    camera.position.set(0, 50, 0);
+    controls.saveState();
+    xy_zero_orbit_controls(controls, 20.0);
 
     planets_group.clear();
     for (const [key, value] of Object.entries(system_data[name]))
@@ -166,7 +174,7 @@ function main()
     renderer.setSize( container.clientWidth, container.clientHeight );
     container.appendChild( renderer.domElement ); 
 
-    const controls = new MapControls( camera, labelRenderer.domElement );
+    controls = new MapControls( camera, labelRenderer.domElement );
     controls.enableDamping = true;
     controls.enableRotate = false;
     controls.zoomToCursor = true;
