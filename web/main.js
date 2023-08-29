@@ -18,7 +18,13 @@ let system_data;
 
 function click_home()
 {
-    console.log("click_home()");
+    camera.position.set(last_universe_camera_pos.x, last_universe_camera_pos.y, last_universe_camera_pos.z);
+    planets_group.clear();
+    document.getElementById("system_indicator").classList.remove("active")
+    for (const star of star_group.children) {
+        star.visible = true;
+        star.children[0].visible = true;
+    }
 }
 
 function highlight_obj(obj, with_label){
@@ -40,7 +46,6 @@ function unhighlight_obj(obj, with_label){
 
 function activate_system(name)
 {
-    console.log(`activate_system(${name})`);
     document.getElementById("system_indicator").classList.add("active")
     document.getElementById("system_indicator").textContent = name;
     for (const star of star_group.children) {
@@ -56,16 +61,17 @@ function activate_system(name)
         const geometry = new THREE.SphereGeometry( 3, 16, 12 ); 
         const material = new THREE.MeshBasicMaterial( { color: 0x4ae1aa } ); 
         const sphere = new THREE.Mesh( geometry, material );
-        scene.add( sphere );
+        planets_group.add( sphere );
 
         const wire_geometry = new THREE.WireframeGeometry( geometry ); 
         const wire_material = new THREE.LineBasicMaterial( { color: 0x000000 } );
         const wire_sphere = new THREE.LineSegments( wire_geometry, wire_material );
-        scene.add( wire_sphere );
+        planets_group.add( wire_sphere );
 
         sphere.position.set(value["position"][0], value["position"][1], value["position"][2]);
         wire_sphere.position.set(value["position"][0], value["position"][1], value["position"][2]);
     }
+    scene.add( planets_group );
 }
 
 function on_label_click(name)
