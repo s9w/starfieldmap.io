@@ -82,12 +82,28 @@ function onPointerMove( event ) {
     pointer.y = - ( event.offsetY / container.clientHeight ) * 2 + 1;
 }
 
+async function get_and_process_data(scene)
+{
+    const compressedBuf = await fetch('data').then(
+        res => res.arrayBuffer()
+    );
+    const compressed = new Uint8Array(compressedBuf);
+    var string = new TextDecoder().decode(fzstd.decompress(compressed));
+    var payload = JSON.parse(string);
+    for (const [key, value] of Object.entries(payload))
+    {
+        add_sphere(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), 0xff807d, key);
+    }
+}
+
 function main()
 {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color( 0x111b22 );
     raycaster = new THREE.Raycaster();
-    camera.position.y = 20;
+    camera.position.y = 40;
+
+    get_and_process_data(scene);
     
     labelRenderer.setSize( container.clientWidth, container.clientHeight );
     labelRenderer.domElement.style.position = 'absolute';
@@ -103,9 +119,6 @@ function main()
     controls.zoomToCursor = true;
     controls.enableDamping = false;
     controls.zoomSpeed = 2.0;
-
-    add_sphere(scene, new THREE.Vector3(0,0,0), 0xff807d, "Alpha Centauri");
-    add_sphere(scene, new THREE.Vector3(50,1,1), 0xff807d, "Porrima");
 
     function animate() {
         requestAnimationFrame( animate );
