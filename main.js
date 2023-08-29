@@ -46,7 +46,7 @@ function add_sphere(scene, position, color, name)
     const map = new THREE.TextureLoader().load( 'circle.png' );
     const material = new THREE.SpriteMaterial( { map: map, color: 0xff807d  } );
     material.transparent = true;
-    material.opacity = 1;
+    material.opacity = 0.5;
     material.sizeAttenuation = false;
     const sprite = new THREE.Sprite( material );
     
@@ -74,7 +74,7 @@ const renderer = new THREE.WebGLRenderer({antialias: true});
 let labelRenderer = new CSS2DRenderer();
 let container = document.getElementById('glContainer');
 let raycaster;
-const pointer = new THREE.Vector2();
+const pointer = new THREE.Vector2(99, 99);
 let INTERSECTED;
 
 function onPointerMove( event ) {
