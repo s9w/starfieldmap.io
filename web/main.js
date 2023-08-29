@@ -21,9 +21,14 @@ function unhighlight_obj(obj, with_label){
     }
 }
 
+function activate_system(name)
+{
+    console.log(`activate_system(${name})`);
+}
+
 function on_label_click(name)
 {
-    console.log("clicked, name: " + name);
+    activate_system(name);
 }
 function on_label_mouseover(name)
 {
@@ -37,11 +42,11 @@ function on_label_mouseout(name)
 function on_container_click()
 {
     if(INTERSECTED !== null)
-        console.log("container clicked while on something");
+        activate_system(INTERSECTED.name);
 }
 
 
-function add_sphere(scene, position, color, name)
+function add_sphere(scene, position, name)
 {
     const map = new THREE.TextureLoader().load( 'circle.png' );
     const material = new THREE.SpriteMaterial( { map: map, color: 0xff807d  } );
@@ -49,6 +54,7 @@ function add_sphere(scene, position, color, name)
     material.opacity = 0.5;
     material.sizeAttenuation = false;
     const sprite = new THREE.Sprite( material );
+    sprite.name = name;
     
     const sprite_size = 0.05;
     sprite.scale.set( sprite_size, sprite_size, sprite_size );
@@ -92,7 +98,7 @@ async function get_and_process_data(scene)
     var payload = JSON.parse(string);
     for (const [key, value] of Object.entries(payload))
     {
-        add_sphere(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), 0xff807d, key);
+        add_sphere(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key);
     }
 }
 
