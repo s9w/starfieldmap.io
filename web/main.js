@@ -3,6 +3,16 @@ import { MapControls } from 'three/addons/controls/MapControls.js';
 import { CSS2DRenderer, CSS2DObject  } from 'three/addons/renderers/CSS2DRenderer.js';
 
 let name_to_obj = {};
+let star_group = new THREE.Group();
+let planets_group = new THREE.Group();
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const renderer = new THREE.WebGLRenderer({antialias: true});
+let labelRenderer = new CSS2DRenderer();
+let container = document.getElementById('glContainer');
+let raycaster;
+const pointer = new THREE.Vector2(99, 99);
+let INTERSECTED;
+let last_universe_camera_pos;
 
 function highlight_obj(obj, with_label){
     obj.material.opacity = 1.0;
@@ -26,6 +36,13 @@ function activate_system(name)
     console.log(`activate_system(${name})`);
     document.getElementById("system_indicator").classList.add("active")
     document.getElementById("system_indicator").textContent = name;
+    for (const star of star_group.children) {
+        star.visible = false;
+        star.children[0].visible = false;
+    }
+    last_universe_camera_pos = camera.position;
+
+    planets_group.clear();
 }
 
 function on_label_click(name)
@@ -46,6 +63,7 @@ function on_container_click()
     if(INTERSECTED !== null)
         activate_system(INTERSECTED.name);
 }
+
 
 
 function add_sphere(scene, position, name)
@@ -73,22 +91,19 @@ function add_sphere(scene, position, name)
     sprite.add( css2_object );
     
     sprite.position.set(position.x, position.y, position.z);
-    scene.add( sprite );
+    star_group.add( sprite );
+    scene.add( star_group );
     name_to_obj[name] = sprite;
 }
 
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-const renderer = new THREE.WebGLRenderer({antialias: true});
-let labelRenderer = new CSS2DRenderer();
-let container = document.getElementById('glContainer');
-let raycaster;
-const pointer = new THREE.Vector2(99, 99);
-let INTERSECTED;
+
 
 function onPointerMove( event ) {
     pointer.x = ( event.offsetX / container.clientWidth ) * 2 - 1;
     pointer.y = - ( event.offsetY / container.clientHeight ) * 2 + 1;
 }
+
+
 
 async function get_and_process_data(scene)
 {
@@ -133,7 +148,7 @@ function main()
         controls.update();  
 
         raycaster.setFromCamera( pointer, camera );
-        const intersects = raycaster.intersectObjects( scene.children, false );
+        const intersects = raycaster.intersectObjects( star_group.children, false );
         if ( intersects.length > 0 ) {
             if ( INTERSECTED != intersects[ 0 ].object ) {
                 if ( INTERSECTED )
