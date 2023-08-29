@@ -1,0 +1,26 @@
+{
+    "porrima": {
+        "position_index": 0,
+        "spectral class": "F0",
+        "temperature": 7500,
+        "mass": 1.55,
+        "radius": 973700,
+        "magnitude": 2.40,
+        "planets": 6,
+        "moons": 15
+    },
+    "volii": {
+        "position_index": 1,
+        "spectral class": "G0",
+        "temperature": 5575,
+        "mass": 0.93,
+        "radius": 647559,
+        "magnitude": 5.07,
+        "planets": 6,
+        "moons": 5
+    },
+    "alpha centauri":
+    {
+        "position_index": 2
+    }
+}

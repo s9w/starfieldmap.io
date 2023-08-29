@@ -1,0 +1,41 @@
+{
+    "Gagarin":
+    {
+        "TYPE": "ROCK",
+        "GRAVITY": 0.89,
+        "TEMPERATURE": "TEMPERATE",
+        "ATMOSPHERE": "HIGH O2",
+        "MAGNETOSPHERE": "POWERFUL",
+        "FAUNA": 8,
+        "FLORA": 5,
+        "WATER": "BIOLOGICAL",
+
+        "position_index": 0
+    },
+    "planet2":
+    {
+        "TYPE": "ROCK",
+        "GRAVITY": 0.89,
+        "TEMPERATURE": "TEMPERATE",
+        "ATMOSPHERE": "HIGH O2",
+        "MAGNETOSPHERE": "POWERFUL",
+        "FAUNA": 8,
+        "FLORA": 5,
+        "WATER": "BIOLOGICAL",
+        
+        "position_index": 1
+    },
+    "planet3":
+    {
+        "TYPE": "ROCK",
+        "GRAVITY": 0.89,
+        "TEMPERATURE": "TEMPERATE",
+        "ATMOSPHERE": "HIGH O2",
+        "MAGNETOSPHERE": "POWERFUL",
+        "FAUNA": 8,
+        "FLORA": 5,
+        "WATER": "BIOLOGICAL",
+        
+        "position_index": 2
+    }
+}
