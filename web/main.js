@@ -13,12 +13,12 @@ let container = document.getElementById('glContainer');
 let raycaster;
 const pointer = new THREE.Vector2(99, 99);
 let INTERSECTED;
-let last_universe_camera_pos;
+let last_galaxy_camera_pos;
 let system_data;
 
 function click_home()
 {
-    camera.position.set(last_universe_camera_pos.x, last_universe_camera_pos.y, last_universe_camera_pos.z);
+    camera.position.set(last_galaxy_camera_pos.x, last_galaxy_camera_pos.y, last_galaxy_camera_pos.z);
     planets_group.clear();
     document.getElementById("system_indicator").classList.remove("active")
     for (const star of star_group.children) {
@@ -52,7 +52,7 @@ function activate_system(name)
         star.visible = false;
         star.children[0].visible = false;
     }
-    last_universe_camera_pos = camera.position;
+    last_galaxy_camera_pos = camera.position;
     camera.position.set(0, 50, 0);
 
     planets_group.clear();
