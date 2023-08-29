@@ -1,4 +1,5 @@
 import json, zstd
+from pathlib import Path
 
 with open('star_positions.json', 'r') as f:
     star_positions = json.load(f)
@@ -19,7 +20,26 @@ for key in stars.keys():
 for position_index in unused_star_positions:
     stars[f"unknown_{position_index}"] = {"position": star_positions[position_index]}
 
-data = {"stars": stars}
+# Now the systems
+systems = {}
+postfix = "_positions.json"
+pathlist = Path("planet_and_moon_data").glob(f'*{postfix}')
+for path in pathlist:
+    filename = path.name
+    system_name = filename[:-len(postfix)]
+    with open(f'planet_and_moon_data/{system_name}_positions.json', 'r') as f:
+        planet_positions = json.load(f)
+    with open(f'planet_and_moon_data/{system_name}.json', 'r') as f:
+        planet_data = json.load(f)
+    system_data = {}
+    for planet_name, planet_data in planet_data.items():
+        system_data[planet_name] = planet_data
+        system_data[planet_name]["position"] = planet_positions[system_data[planet_name]["position_index"]]
+        del system_data[planet_name]["position_index"]
+    systems[system_name] = system_data
+
+
+data = {"stars": stars, "systems": systems}
 print(data)
 
 uncompressed_str = json.dumps(data, separators=(',', ':'))

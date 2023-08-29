@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { MapControls } from 'three/addons/controls/MapControls.js';
 import { CSS2DRenderer, CSS2DObject  } from 'three/addons/renderers/CSS2DRenderer.js';
 
+let scene;
 let name_to_obj = {};
 let star_group = new THREE.Group();
 let planets_group = new THREE.Group();
@@ -13,6 +14,7 @@ let raycaster;
 const pointer = new THREE.Vector2(99, 99);
 let INTERSECTED;
 let last_universe_camera_pos;
+let system_data;
 
 function highlight_obj(obj, with_label){
     obj.material.opacity = 1.0;
@@ -41,8 +43,17 @@ function activate_system(name)
         star.children[0].visible = false;
     }
     last_universe_camera_pos = camera.position;
+    camera.position.set(0, 50, 0);
 
     planets_group.clear();
+    for (const [key, value] of Object.entries(system_data[name]))
+    {
+        const geometry = new THREE.SphereGeometry( 3, 32, 16 ); 
+        const material = new THREE.MeshBasicMaterial( { color: 0x4ae1aa } ); 
+        const sphere = new THREE.Mesh( geometry, material );
+        scene.add( sphere );
+        sphere.position.set(value["position"][0], value["position"][1], value["position"][2]);
+    }
 }
 
 function on_label_click(name)
@@ -117,11 +128,12 @@ async function get_and_process_data(scene)
     {
         add_sphere(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key);
     }
+    system_data = payload.systems;
 }
 
 function main()
 {
-    const scene = new THREE.Scene();
+    scene = new THREE.Scene();
     scene.background = new THREE.Color( 0x111b22 );
     raycaster = new THREE.Raycaster();
     camera.position.y = 40;
