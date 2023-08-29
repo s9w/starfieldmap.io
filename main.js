@@ -41,17 +41,17 @@ function on_container_click()
 }
 
 
-
 function add_sphere(scene, position, color, name)
 {
-    const star_radius = 0.5;
-
     const map = new THREE.TextureLoader().load( 'circle.png' );
     const material = new THREE.SpriteMaterial( { map: map, color: 0xff807d  } );
     material.transparent = true;
     material.opacity = 1;
-
+    material.sizeAttenuation = false;
     const sprite = new THREE.Sprite( material );
+    
+    const sprite_size = 0.05;
+    sprite.scale.set( sprite_size, sprite_size, sprite_size );
 
     const text_div_el = document.createElement( 'div' );
     text_div_el.addEventListener('click', function(){on_label_click(name)} );
@@ -61,7 +61,6 @@ function add_sphere(scene, position, color, name)
     text_div_el.textContent = name;
     const css2_object = new CSS2DObject( text_div_el );
     
-    css2_object.position.set( 1.5 * star_radius, 0, 0 );
     css2_object.center.set( 0.0, 0.5 );
     sprite.add( css2_object );
     

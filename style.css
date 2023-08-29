@@ -6,6 +6,7 @@
 .label {
     color: #ffffff;
     text-transform: uppercase;
+    margin-left: 1em;
     font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;;
     font-size: larger;
     padding-left: 0.5em;
@@ -23,4 +24,3 @@ body{
     flex-grow: 1;
     position: relative;
 }
-/* body { margin: 0; } */
