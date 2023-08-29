@@ -35,7 +35,7 @@ body{
 }
 .nav_buttons > div:not(:first-child)::before
 {
-    content: ">>";
+    content: "→";
     opacity: 0.5;
     margin-left: 0.5em;
     margin-right: 0.5em;

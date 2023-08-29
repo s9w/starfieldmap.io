@@ -48,11 +48,18 @@ function activate_system(name)
     planets_group.clear();
     for (const [key, value] of Object.entries(system_data[name]))
     {
-        const geometry = new THREE.SphereGeometry( 3, 32, 16 ); 
+        const geometry = new THREE.SphereGeometry( 3, 16, 12 ); 
         const material = new THREE.MeshBasicMaterial( { color: 0x4ae1aa } ); 
         const sphere = new THREE.Mesh( geometry, material );
         scene.add( sphere );
+
+        const wire_geometry = new THREE.WireframeGeometry( geometry ); 
+        const wire_material = new THREE.LineBasicMaterial( { color: 0x000000 } );
+        const wire_sphere = new THREE.LineSegments( wire_geometry, wire_material );
+        scene.add( wire_sphere );
+
         sphere.position.set(value["position"][0], value["position"][1], value["position"][2]);
+        wire_sphere.position.set(value["position"][0], value["position"][1], value["position"][2]);
     }
 }
 
