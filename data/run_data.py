@@ -5,9 +5,19 @@ with open('star_positions.json', 'r') as f:
 with open('stars.json', 'r') as f:
     stars = json.load(f)
 
+# Track positions without information
+unused_star_positions = set()
+for i in range(len(star_positions)):
+    unused_star_positions.add(i)
+
 for key in stars.keys():
     stars[key]["position"] = star_positions[stars[key]["position_index"]]
+    unused_star_positions.remove(stars[key]["position_index"])
     del stars[key]["position_index"]
+
+# Add stars without information
+for position_index in unused_star_positions:
+    stars[f"unknown_{position_index}"] = {"position": star_positions[position_index]}
 
 data = {"stars": stars}
 print(data)
