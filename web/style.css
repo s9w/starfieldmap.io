@@ -2,7 +2,9 @@
     font-family: "ProFontWindows V1";
     src: url("ProFontWindows V1.woff2")format("woff2")
 }
-
+html, body{
+    height: 100%;
+}
 .label {
     color: #ffffff;
     text-transform: uppercase;

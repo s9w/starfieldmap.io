@@ -276,11 +276,11 @@ function main()
 }
 
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
     
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    labelRenderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( container.clientWidth, container.clientHeight );
+    labelRenderer.setSize( container.clientWidth, container.clientHeight );
 }
 
 container.addEventListener( 'click', on_container_click );
