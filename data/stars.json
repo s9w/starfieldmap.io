@@ -1,6 +1,8 @@
 {
     "porrima": {
         "position_index": 0,
+
+        "level": 5,
         "spectral class": "F0",
         "temperature": 7500,
         "mass": 1.55,
@@ -11,6 +13,8 @@
     },
     "volii": {
         "position_index": 1,
+
+        "level": 5,
         "spectral class": "G0",
         "temperature": 5575,
         "mass": 0.93,

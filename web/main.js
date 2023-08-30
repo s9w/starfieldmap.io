@@ -53,7 +53,14 @@ function set_infobox_star(star_name, star_data)
 {
     let infobox_el = document.getElementById("infobox");
     infobox_el.textContent = "";
-    infobox_el.appendChild(get_new_elem("div", star_name, "infobox_name"));
+    
+    let level_indicator = get_new_elem("div", null, "level_indicator");
+    level_indicator.appendChild(get_new_elem("div", "LEVEL"));
+    level_indicator.appendChild(get_new_elem("div", star_data["level"]));
+    infobox_el.appendChild(level_indicator);
+
+    
+    infobox_el.appendChild(get_new_elem("div", star_name, "infobox_name"));    
 
     let attrib_list_el = get_new_elem("div");
     attrib_list_el.id = "infobox_list";
@@ -61,6 +68,9 @@ function set_infobox_star(star_name, star_data)
     attrib_list_el.appendChild(get_infobox_attrib_el("TEMPERATURE", `${star_data["temperature"]}K`));
     attrib_list_el.appendChild(get_infobox_attrib_el("MASS", `${star_data["mass"]}SM`));
     attrib_list_el.appendChild(get_infobox_attrib_el("RADIUS", star_data["radius"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("MAGNITUDE", star_data["magnitude"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("PLANETS", star_data["planets"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("MOONS", star_data["moons"]));
     infobox_el.appendChild(attrib_list_el);
 }
 
