@@ -195,7 +195,7 @@ function onPointerMove( event ) {
 
 async function get_and_process_data(scene)
 {
-    const compressedBuf = await fetch('data').then(
+    const compressedBuf = await fetch('data', {cache: "no-store"}).then(
         res => res.arrayBuffer()
     );
     const compressed = new Uint8Array(compressedBuf);
