@@ -8,7 +8,7 @@ let controls;
 let star_group = new THREE.Group();
 let planets_group = new THREE.Group();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-const renderer = new THREE.WebGLRenderer({antialias: true});
+const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true });
 let labelRenderer = new CSS2DRenderer();
 let container = document.getElementById('glContainer');
 let raycaster;
@@ -222,7 +222,6 @@ async function get_and_process_data(scene)
 function main()
 {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0x111b22 );
     raycaster = new THREE.Raycaster();
     camera.position.y = 40;
 

@@ -23,12 +23,14 @@ body{
 #glContainer{
     flex-grow: 1;
     position: relative;
+    background: rgb(37,46,51);
+    background: radial-gradient(circle, rgba(37,46,51,1) 0%, rgba(13,20,25,1) 100%);
 }
 .nav_buttons{
     
     font-size: x-large;
     color: white;
-    background-color: #111b22;
+    background-color: rgb(13,20,25);
     padding: 0.5em;
     display: flex;
     align-items: center;
