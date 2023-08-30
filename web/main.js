@@ -108,6 +108,20 @@ function xy_zero_orbit_controls(orbit_controls, new_height)
     orbit_controls.update();
 }
 
+function add_system_body(radius, color, pos, receives_shadow)
+{
+    const geometry = new THREE.SphereGeometry( radius, 16, 12 );
+    let material;
+    if(receives_shadow == false)
+        material = new THREE.MeshBasicMaterial( { color: color } ); 
+    else
+        material = new THREE.MeshStandardMaterial( { color: color } ); 
+    const sphere = new THREE.Mesh( geometry, material );
+    sphere.receiveShadow = receives_shadow;
+    planets_group.add( sphere );
+    sphere.position.set(pos[0], pos[1], pos[2]);
+}
+
 function activate_system(name)
 {
     mode = "system";
@@ -125,15 +139,9 @@ function activate_system(name)
     planets_group.clear();
     for (const [key, value] of Object.entries(system_data[name]))
     {
-        const geometry = new THREE.SphereGeometry( 2, 16, 12 ); 
-        const material = new THREE.MeshStandardMaterial( { color: 0x1f425b } ); 
-        const sphere = new THREE.Mesh( geometry, material );
-        // sphere.castShadow  = true;
-        sphere.receiveShadow = true;
-        planets_group.add( sphere );
-
-        sphere.position.set(value["position"][0], value["position"][1], value["position"][2]);
+        add_system_body(2, 0x1f425b, value["position"], true);
     }
+    add_system_body(2, 0xffff80, [0,0,0], false);
     scene.add( planets_group );
 }
 
