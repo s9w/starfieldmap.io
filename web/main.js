@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { MapControls } from 'three/addons/controls/MapControls.js';
 import { CSS2DRenderer, CSS2DObject  } from 'three/addons/renderers/CSS2DRenderer.js';
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+import { Line2 } from 'three/addons/lines/Line2.js';
 
 let scene;
 let name_to_obj = {};
@@ -122,6 +125,28 @@ function add_system_body(radius, color, pos, receives_shadow)
     sphere.position.set(pos[0], pos[1], pos[2]);
 }
 
+
+function add_planet_orbit(center_vec3, radius, target_group)
+{
+    let line_points = [];
+    const n = 32;
+    for (let i = 0; i < n; i++)
+    {
+        const angle = 1.0*i/(n-1)*2.0*Math.PI;
+        line_points.push(
+            center_vec3.x + radius*Math.cos(angle),
+            center_vec3.y,
+            center_vec3.z + radius*Math.sin(angle)
+            );
+    }
+
+    let line_geometry = new LineGeometry();
+    line_geometry.setPositions( line_points );
+    let rings_obj = new Line2( line_geometry, new LineMaterial({color: 0x808080, linewidth: 0.001}) );
+    target_group.add(rings_obj)
+}
+
+
 function activate_system(name)
 {
     mode = "system";
@@ -142,6 +167,7 @@ function activate_system(name)
         add_system_body(2, 0x1f425b, value["position"], true);
     }
     add_system_body(2, 0xffff80, [0,0,0], false);
+    add_planet_orbit(new THREE.Vector3(), 10, planets_group);
     scene.add( planets_group );
 }
 
