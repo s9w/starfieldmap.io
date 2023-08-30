@@ -20,6 +20,7 @@ let star_data;
 function click_home()
 {
     controls.reset();
+    controls.enableZoom = true;
     planets_group.clear();
     document.getElementById("system_indicator").classList.remove("active")
     for (const star of star_group.children) {
@@ -62,6 +63,7 @@ function set_infobox_star(star_name, star_data)
 }
 
 function highlight_obj(obj, with_label){
+    document.getElementById("infobox").classList.add("active");
     set_infobox_star(obj.name, star_data[obj.name]);
     obj.material.opacity = 1.0;
     if(with_label)
@@ -71,6 +73,7 @@ function highlight_obj(obj, with_label){
     }
 }
 function unhighlight_obj(obj, with_label){
+    document.getElementById("infobox").classList.remove("active");
     obj.material.opacity = 0.5;
     if(with_label)
     {
@@ -96,6 +99,7 @@ function activate_system(name)
         star.children[0].visible = false;
     }
     controls.saveState();
+    controls.enableZoom = false;
     xy_zero_orbit_controls(controls, 20.0);
 
     planets_group.clear();
@@ -211,11 +215,11 @@ function main()
     container.appendChild( renderer.domElement ); 
 
     controls = new MapControls( camera, labelRenderer.domElement );
-    controls.enableDamping = true;
     controls.enableRotate = false;
     controls.zoomToCursor = true;
     controls.enableDamping = false;
     controls.zoomSpeed = 2.0;
+    controls.panSpeed = 1.0;
 
     function animate() {
         requestAnimationFrame( animate );

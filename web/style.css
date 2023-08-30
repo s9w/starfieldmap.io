@@ -40,7 +40,7 @@ body{
     margin-left: 0.5em;
     margin-right: 0.5em;
 }
-#system_indicator:not(.active){
+#system_indicator:not(.active), #infobox:not(.active){
     display: none;
 }
 #home_button{
