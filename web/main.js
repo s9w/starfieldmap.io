@@ -53,7 +53,7 @@ function set_infobox_star(star_name, star_data)
 {
     let infobox_el = document.getElementById("infobox");
     infobox_el.textContent = "";
-    
+
     let level_indicator = get_new_elem("div", null, "level_indicator");
     level_indicator.appendChild(get_new_elem("div", "LEVEL"));
     level_indicator.appendChild(get_new_elem("div", star_data["level"]));
@@ -103,8 +103,8 @@ function unhighlight_obj(obj, with_label, from_type)
 function xy_zero_orbit_controls(orbit_controls, new_height)
 {
     let cam = orbit_controls.object;
-    cam.position.set(0, cam.position.y, 0);
-    orbit_controls.target.set(0, new_height, 0);
+    cam.position.set(0, new_height, 0);
+    orbit_controls.target.set(0, orbit_controls.target.y, 0);
     orbit_controls.update();
 }
 
