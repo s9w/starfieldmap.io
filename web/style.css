@@ -52,9 +52,11 @@ body{
 
 #infobox{
     position: absolute;
+    left: 1em;
     background-color: rgba(0, 0, 0, 0.5);
     color: #ffffffba;;
     text-transform: uppercase;
+    font-size: larger;
     width: 15em;
 
     padding-top: 1em;
