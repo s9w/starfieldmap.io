@@ -125,18 +125,14 @@ function activate_system(name)
     planets_group.clear();
     for (const [key, value] of Object.entries(system_data[name]))
     {
-        const geometry = new THREE.SphereGeometry( 3, 16, 12 ); 
-        const material = new THREE.MeshBasicMaterial( { color: 0x4ae1aa } ); 
+        const geometry = new THREE.SphereGeometry( 2, 16, 12 ); 
+        const material = new THREE.MeshStandardMaterial( { color: 0x1f425b } ); 
         const sphere = new THREE.Mesh( geometry, material );
+        // sphere.castShadow  = true;
+        sphere.receiveShadow = true;
         planets_group.add( sphere );
 
-        const wire_geometry = new THREE.WireframeGeometry( geometry ); 
-        const wire_material = new THREE.LineBasicMaterial( { color: 0x000000 } );
-        const wire_sphere = new THREE.LineSegments( wire_geometry, wire_material );
-        planets_group.add( wire_sphere );
-
         sphere.position.set(value["position"][0], value["position"][1], value["position"][2]);
-        wire_sphere.position.set(value["position"][0], value["position"][1], value["position"][2]);
     }
     scene.add( planets_group );
 }
@@ -225,6 +221,12 @@ function main()
     raycaster = new THREE.Raycaster();
     camera.position.y = 40;
 
+    const light = new THREE.AmbientLight( 0xffffff, 0.2 );
+    scene.add( light );
+    const sun_light = new THREE.PointLight( 0xffffff, 10, 0, 0 );
+    sun_light.castShadow = true;
+    scene.add( sun_light );
+
     get_and_process_data(scene);
     
     labelRenderer.setSize( container.clientWidth, container.clientHeight );
@@ -233,6 +235,8 @@ function main()
     container.appendChild( labelRenderer.domElement );
 
     renderer.setSize( container.clientWidth, container.clientHeight );
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
     container.appendChild( renderer.domElement ); 
 
     controls = new MapControls( camera, labelRenderer.domElement );
