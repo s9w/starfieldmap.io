@@ -16,9 +16,11 @@ const pointer = new THREE.Vector2(99, 99);
 let INTERSECTED;
 let system_data;
 let star_data;
+let mode = "galaxy";
 
 function click_home()
 {
+    mode = "galaxy";
     controls.reset();
     controls.enableZoom = true;
     planets_group.clear();
@@ -62,7 +64,10 @@ function set_infobox_star(star_name, star_data)
     infobox_el.appendChild(attrib_list_el);
 }
 
-function highlight_obj(obj, with_label){
+function highlight_obj(obj, with_label, from_type)
+{
+    if(mode != "galaxy" && from_type == "star")
+        return;
     document.getElementById("infobox").classList.add("active");
     set_infobox_star(obj.name, star_data[obj.name]);
     obj.material.opacity = 1.0;
@@ -72,7 +77,10 @@ function highlight_obj(obj, with_label){
         label_div.classList.add("forcedhover");
     }
 }
-function unhighlight_obj(obj, with_label){
+function unhighlight_obj(obj, with_label, from_type)
+{
+    if(mode != "galaxy" && from_type == "star")
+        return;
     document.getElementById("infobox").classList.remove("active");
     obj.material.opacity = 0.5;
     if(with_label)
@@ -92,6 +100,8 @@ function xy_zero_orbit_controls(orbit_controls, new_height)
 
 function activate_system(name)
 {
+    mode = "system";
+    document.getElementById("infobox").classList.remove("active");
     document.getElementById("system_indicator").classList.add("active")
     document.getElementById("system_indicator").textContent = name;
     for (const star of star_group.children) {
@@ -125,13 +135,13 @@ function on_label_click(name)
 {
     activate_system(name);
 }
-function on_label_mouseover(name)
+function on_label_mouseover(event, name)
 {
-    highlight_obj(name_to_obj[name], false);
+    highlight_obj(name_to_obj[name], false, event.target.dataset.type);
 }
-function on_label_mouseout(name)
+function on_label_mouseout(event, name)
 {
-    unhighlight_obj(name_to_obj[name], false);
+    unhighlight_obj(name_to_obj[name], false, event.target.dataset.type);
 }
 
 function on_container_click()
@@ -151,16 +161,18 @@ function add_sphere(scene, position, name)
     material.sizeAttenuation = false;
     const sprite = new THREE.Sprite( material );
     sprite.name = name;
+    sprite.userData["type"] = "star";
     
     const sprite_size = 0.05;
     sprite.scale.set( sprite_size, sprite_size, sprite_size );
 
     const text_div_el = document.createElement( 'div' );
     text_div_el.addEventListener('click', function(){on_label_click(name)} );
-    text_div_el.addEventListener('mouseover', function(){on_label_mouseover(name)} );
-    text_div_el.addEventListener('mouseout', function(){on_label_mouseout(name)} );
+    text_div_el.addEventListener('mouseover', function(ev){on_label_mouseover(ev, name)} );
+    text_div_el.addEventListener('mouseout', function(ev){on_label_mouseout(ev, name)} );
     text_div_el.className = 'label';
     text_div_el.textContent = name;
+    text_div_el.dataset.type = "star";
     const css2_object = new CSS2DObject( text_div_el );
     
     css2_object.center.set( 0.0, 0.5 );
@@ -231,16 +243,16 @@ function main()
             if ( INTERSECTED != intersects[ 0 ].object ) {
                 if ( INTERSECTED )
                 {
-                    unhighlight_obj(INTERSECTED, true);
+                    unhighlight_obj(INTERSECTED, true, INTERSECTED.userData.type);
                 }
                 INTERSECTED = intersects[ 0 ].object;
-                highlight_obj(INTERSECTED, true)
+                highlight_obj(INTERSECTED, true, INTERSECTED.userData.type)
             }
         }
         else {
             if ( INTERSECTED )
             {
-                unhighlight_obj(INTERSECTED, true);
+                unhighlight_obj(INTERSECTED, true, INTERSECTED.userData.type);
             }
             INTERSECTED = null;
         }
