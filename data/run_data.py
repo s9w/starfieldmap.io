@@ -50,7 +50,7 @@ with open("data", mode="wb") as file:
     file.write(compressed_str)
 
 # Credential load
-with open('secrets.json', mode='r', encoding='UTF-8') as file:
+with open('../local_stuff/secrets.json', mode='r', encoding='UTF-8') as file:
     secrets = json.load(file)
 
 # Upload compressed json payload to ftp
