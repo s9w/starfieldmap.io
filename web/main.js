@@ -113,7 +113,7 @@ function xy_zero_orbit_controls(orbit_controls, new_height)
 
 function add_system_body(radius, color, pos, receives_shadow)
 {
-    const geometry = new THREE.SphereGeometry( radius, 16, 12 );
+    const geometry = new THREE.SphereGeometry( radius, 24, 8 );
     let material;
     if(receives_shadow == false)
         material = new THREE.MeshBasicMaterial( { color: color } ); 
@@ -129,7 +129,7 @@ function add_system_body(radius, color, pos, receives_shadow)
 function add_planet_orbit(center_vec3, radius, target_group)
 {
     let line_points = [];
-    const n = 32;
+    const n = 64;
     for (let i = 0; i < n; i++)
     {
         const angle = 1.0*i/(n-1)*2.0*Math.PI;
@@ -142,7 +142,10 @@ function add_planet_orbit(center_vec3, radius, target_group)
 
     let line_geometry = new LineGeometry();
     line_geometry.setPositions( line_points );
-    let rings_obj = new Line2( line_geometry, new LineMaterial({color: 0x808080, linewidth: 0.001}) );
+    let line_material = new LineMaterial({color: 0xffffff, linewidth: 0.0005});
+    line_material.transparent = true;
+    line_material.opacity = 0.4;
+    let rings_obj = new Line2( line_geometry, line_material);
     target_group.add(rings_obj)
 }
 
@@ -164,7 +167,7 @@ function activate_system(name)
     planets_group.clear();
     for (const [key, value] of Object.entries(system_data[name]))
     {
-        add_system_body(2, 0x1f425b, value["position"], true);
+        add_system_body(2, 0x407945, value["position"], true);
     }
     add_system_body(2, 0xffff80, [0,0,0], false);
     add_planet_orbit(new THREE.Vector3(), 10, planets_group);
