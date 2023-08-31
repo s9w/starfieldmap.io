@@ -1,46 +1,46 @@
 {
-    "Gagarin":
+    "gagarin":
     {
-        "TYPE": "ROCK",
-        "GRAVITY": 0.89,
-        "TEMPERATURE": "TEMPERATE",
-        "ATMOSPHERE": "HIGH O2",
-        "MAGNETOSPHERE": "POWERFUL",
-        "FAUNA": 8,
-        "FLORA": 5,
-        "WATER": "BIOLOGICAL",
-        "RESOURCES":[],
-        "TRAITS": [],
+        "type": "rock",
+        "gravity": 0.89,
+        "temperature": "temperate",
+        "atmosphere": "high o2",
+        "magnetosphere": "powerful",
+        "fauna": 8,
+        "flora": 5,
+        "water": "biological",
+        "resources":[],
+        "traits": [],
 
         "position_index": 0
     },
     "planet2":
     {
-        "TYPE": "ROCK",
-        "GRAVITY": 0.89,
-        "TEMPERATURE": "TEMPERATE",
-        "ATMOSPHERE": "HIGH O2",
-        "MAGNETOSPHERE": "POWERFUL",
-        "FAUNA": 8,
-        "FLORA": 5,
-        "WATER": "BIOLOGICAL",
-        "RESOURCES":[],
-        "TRAITS": [],
+        "type": "rock",
+        "gravity": 0.89,
+        "temperature": "temperate",
+        "atmosphere": "high o2",
+        "magnetosphere": "powerful",
+        "fauna": 8,
+        "flora": 5,
+        "water": "biological",
+        "resources":[],
+        "traits": [],
         
         "position_index": 1
     },
     "planet3":
     {
-        "TYPE": "ROCK",
-        "GRAVITY": 0.89,
-        "TEMPERATURE": "TEMPERATE",
-        "ATMOSPHERE": "HIGH O2",
-        "MAGNETOSPHERE": "POWERFUL",
-        "FAUNA": 8,
-        "FLORA": 5,
-        "WATER": "BIOLOGICAL",
-        "RESOURCES":[],
-        "TRAITS": [],
+        "type": "rock",
+        "gravity": 0.89,
+        "temperature": "temperate",
+        "atmosphere": "high o2",
+        "magnetosphere": "powerful",
+        "fauna": 8,
+        "flora": 5,
+        "water": "biological",
+        "resources":[],
+        "traits": [],
         
         "position_index": 2
     }

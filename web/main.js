@@ -67,13 +67,13 @@ function set_infobox_star(star_name, star_data)
 
     let attrib_list_el = get_new_elem("div");
     attrib_list_el.id = "infobox_list";
-    attrib_list_el.appendChild(get_infobox_attrib_el("SPECTRAL CLASS", star_data["spectral class"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("TEMPERATURE", `${star_data["temperature"]}K`));
-    attrib_list_el.appendChild(get_infobox_attrib_el("MASS", `${star_data["mass"]}SM`));
-    attrib_list_el.appendChild(get_infobox_attrib_el("RADIUS", star_data["radius"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("MAGNITUDE", star_data["magnitude"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("PLANETS", star_data["planets"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("MOONS", star_data["moons"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("spectral class", star_data["spectral class"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("temperature", `${star_data["temperature"]}K`));
+    attrib_list_el.appendChild(get_infobox_attrib_el("mass", `${star_data["mass"]}SM`));
+    attrib_list_el.appendChild(get_infobox_attrib_el("radius", star_data["radius"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("magnitude", star_data["magnitude"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("planets", star_data["planets"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("moons", star_data["moons"]));
     infobox_el.appendChild(attrib_list_el);
 }
 

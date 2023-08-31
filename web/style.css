@@ -31,13 +31,13 @@ body{
     background-position: center;
 }
 .nav_buttons{
-    
     font-size: x-large;
     color: white;
     background-color: rgb(13,20,25);
     padding: 0.5em;
     display: flex;
     align-items: center;
+    text-transform: capitalize;
 }
 .nav_buttons > div:not(:first-child)::before
 {
