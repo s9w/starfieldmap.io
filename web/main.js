@@ -16,7 +16,7 @@ let labelRenderer = new CSS2DRenderer();
 let container = document.getElementById('glContainer');
 let raycaster;
 const pointer = new THREE.Vector2(99, 99);
-let INTERSECTED;
+let intersection_obj;
 let system_data;
 let star_data;
 let mode = "galaxy";
@@ -189,13 +189,13 @@ function on_label_mouseout(event, name)
 
 function on_container_click()
 {
-    if(INTERSECTED !== null)
-        activate_system(INTERSECTED.name);
+    if(intersection_obj !== null)
+        activate_system(intersection_obj.name);
 }
 
 
 
-function add_sphere(scene, position, name)
+function add_galaxy_view_star(scene, position, name)
 {
     const map = new THREE.TextureLoader().load( 'circle.png' );
     const material = new THREE.SpriteMaterial( { map: map, color: 0xff807d  } );
@@ -246,7 +246,7 @@ async function get_and_process_data(scene)
     var payload = JSON.parse(string);
     for (const [key, value] of Object.entries(payload.stars))
     {
-        add_sphere(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key);
+        add_galaxy_view_star(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key);
     }
     system_data = payload.systems;
     star_data = payload.stars;
@@ -258,8 +258,7 @@ function main()
     raycaster = new THREE.Raycaster();
     camera.position.y = 40;
 
-    const light = new THREE.AmbientLight( 0xffffff, 0.2 );
-    scene.add( light );
+    scene.add( new THREE.AmbientLight( 0xffffff, 0.2 ) );
     const sun_light = new THREE.PointLight( 0xffffff, 10, 0, 0 );
     sun_light.castShadow = true;
     scene.add( sun_light );
@@ -273,7 +272,7 @@ function main()
 
     renderer.setSize( container.clientWidth, container.clientHeight );
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild( renderer.domElement ); 
 
     controls = new MapControls( camera, labelRenderer.domElement );
@@ -290,21 +289,21 @@ function main()
         raycaster.setFromCamera( pointer, camera );
         const intersects = raycaster.intersectObjects( star_group.children, false );
         if ( intersects.length > 0 ) {
-            if ( INTERSECTED != intersects[ 0 ].object ) {
-                if ( INTERSECTED )
+            if ( intersection_obj != intersects[ 0 ].object ) {
+                if ( intersection_obj )
                 {
-                    unhighlight_obj(INTERSECTED, true, INTERSECTED.userData.type);
+                    unhighlight_obj(intersection_obj, true, intersection_obj.userData.type);
                 }
-                INTERSECTED = intersects[ 0 ].object;
-                highlight_obj(INTERSECTED, true, INTERSECTED.userData.type)
+                intersection_obj = intersects[ 0 ].object;
+                highlight_obj(intersection_obj, true, intersection_obj.userData.type)
             }
         }
         else {
-            if ( INTERSECTED )
+            if ( intersection_obj )
             {
-                unhighlight_obj(INTERSECTED, true, INTERSECTED.userData.type);
+                unhighlight_obj(intersection_obj, true, intersection_obj.userData.type);
             }
-            INTERSECTED = null;
+            intersection_obj = null;
         }
 
         renderer.render( scene, camera );
@@ -316,13 +315,14 @@ function main()
     animate();
 }
 
+
 function onWindowResize() {
     camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
-    
     renderer.setSize( container.clientWidth, container.clientHeight );
     labelRenderer.setSize( container.clientWidth, container.clientHeight );
 }
+
 
 container.addEventListener( 'click', on_container_click );
 document.addEventListener( 'mousemove', onPointerMove );
