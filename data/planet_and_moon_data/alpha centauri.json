@@ -9,6 +9,8 @@
         "FAUNA": 8,
         "FLORA": 5,
         "WATER": "BIOLOGICAL",
+        "RESOURCES":[],
+        "TRAITS": [],
 
         "position_index": 0
     },
@@ -22,6 +24,8 @@
         "FAUNA": 8,
         "FLORA": 5,
         "WATER": "BIOLOGICAL",
+        "RESOURCES":[],
+        "TRAITS": [],
         
         "position_index": 1
     },
@@ -35,6 +39,8 @@
         "FAUNA": 8,
         "FLORA": 5,
         "WATER": "BIOLOGICAL",
+        "RESOURCES":[],
+        "TRAITS": [],
         
         "position_index": 2
     }
