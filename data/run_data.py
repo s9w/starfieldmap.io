@@ -1,4 +1,4 @@
-import json, zstd
+import json, zstd, paramiko
 from pathlib import Path
 
 with open('star_positions.json', 'r') as f:
@@ -17,6 +17,8 @@ for key in stars.keys():
     del stars[key]["position_index"]
 
 # Add stars without information
+if len(unused_star_positions) > 0:
+    print(f"{len(unused_star_positions)} stars without metadata")
 for position_index in unused_star_positions:
     stars[f"unknown_{position_index}"] = {"position": star_positions[position_index]}
 
@@ -40,9 +42,22 @@ for path in pathlist:
 
 
 data = {"stars": stars, "systems": systems}
-print(data)
+# print(data)
 
 uncompressed_str = json.dumps(data, separators=(',', ':'))
 compressed_str = zstd.ZSTD_compress(bytes(uncompressed_str, 'utf-8'))
-with open("../web/data", mode="wb") as file:
+with open("data", mode="wb") as file:
     file.write(compressed_str)
+
+# Credential load
+with open('secrets.json', mode='r', encoding='UTF-8') as file:
+    secrets = json.load(file)
+
+# Upload compressed json payload to ftp
+print("uploading data...", end="", flush=True)
+with paramiko.SSHClient() as ssh_client:
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh_client.connect(hostname=secrets["ftp_hostname"], username=secrets["ftp_username"], password=secrets["ftp_password"])
+    with ssh_client.open_sftp() as ftp:
+        files = ftp.put("data", "data")
+print("done")
