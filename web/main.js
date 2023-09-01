@@ -10,7 +10,7 @@ let name_to_obj = {};
 let controls;
 let star_group = new THREE.Group();
 let planets_group = new THREE.Group();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1.0, 10000 );
 const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true });
 let labelRenderer = new CSS2DRenderer();
 let container = document.getElementById('glContainer');
@@ -110,9 +110,14 @@ function xy_zero_orbit_controls(orbit_controls, new_height)
     orbit_controls.update();
 }
 
-function add_system_body(radius, color, pos, receives_shadow)
+function get_visual_radius(real_radius){
+    return 50.0;
+}
+
+function add_system_body(color, radius, dist_from_sun, angle, planet_index, receives_shadow)
 {
-    const geometry = new THREE.SphereGeometry( radius, 24, 8 );
+    let pos = [dist_from_sun * Math.cos(angle), 0, dist_from_sun * Math.sin(angle)];
+    const geometry = new THREE.SphereGeometry( get_visual_radius(radius), 24, 8 );
     let material;
     if(receives_shadow == false)
         material = new THREE.MeshBasicMaterial( { color: color } ); 
@@ -149,27 +154,30 @@ function add_planet_orbit(center_vec3, radius, target_group)
 }
 
 
-function activate_system(name)
+function activate_system(star_name)
 {
     mode = "system";
     document.getElementById("infobox").classList.remove("active");
     document.getElementById("system_indicator").classList.add("active")
-    document.getElementById("system_indicator").textContent = name;
+    document.getElementById("system_indicator").textContent = star_name;
     for (const star of star_group.children) {
         star.visible = false;
         star.children[0].visible = false;
     }
     controls.saveState();
-    controls.enableZoom = false;
-    xy_zero_orbit_controls(controls, 20.0);
+    controls.enableZoom = true;
+    xy_zero_orbit_controls(controls, 1000.0);
 
     planets_group.clear();
-    for (const [key, value] of Object.entries(system_data[name]))
+    let planet_index = 0;
+    for (const [key, value] of Object.entries(all_data[star_name]["planets"]))
     {
-        add_system_body(2, 0x407945, value["position"], true);
+        let distance_from_sun = 100.0 * (planet_index + 1);
+        add_system_body(0x407945, value["radius"], distance_from_sun, value["start_angle"], planet_index, true);
+        add_planet_orbit(new THREE.Vector3(), distance_from_sun, planets_group);
+        ++planet_index;
     }
-    add_system_body(2, 0xffff80, [0,0,0], false);
-    add_planet_orbit(new THREE.Vector3(), 10, planets_group);
+    add_system_body(0xffff80, 999, 0, 0, 0, false);
     scene.add( planets_group );
 }
 

@@ -47,6 +47,7 @@ for row in stars_data:
             "radius": int(sun_radius * get_stars_data("radius", row, "float")),
             "magnitude": get_stars_data("absmag", row),
             "planets": {},
+
             "traits": "TODO",
             "resources": "TODO"
             }
@@ -77,7 +78,10 @@ def get_planet_moon_data(row):
             "flora": "TODO",
             "water": "TODO", # probably f("Hydro %")
 
-            "moons": {}
+            "moons": {},
+            "radius": get_galaxy_data("Radius", row, "float"),
+            "mean_orbit": get_galaxy_data("Mean Orbit", row, "float"),
+            "start_angle": get_galaxy_data("Start Angle", row, "float") / 360.0 * 2.0 * np.pi
         }
 
 # planets
@@ -111,8 +115,8 @@ for star_data in everything.values():
         moon_count += len(planet["moons"])
     star_data["moon_count"] = moon_count
 
-# with open("everything.json", "w") as out_f:
-#     json.dump(everything, out_f, indent=2)
+with open("everything.json", "w") as out_f:
+    json.dump(everything, out_f, indent=2)
 
 # compression
 uncompressed_str = json.dumps(everything, separators=(',', ':'))
