@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { MapControls } from 'three/addons/controls/MapControls.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject  } from 'three/addons/renderers/CSS2DRenderer.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
@@ -261,7 +261,8 @@ function main()
 {
     scene = new THREE.Scene();
     raycaster = new THREE.Raycaster();
-    camera.position.y = 40;
+    let initial_center = new THREE.Vector3(10,-10,0);
+    camera.position.set( initial_center.x, initial_center.y+30, initial_center.z+30 );
 
     scene.add( new THREE.AmbientLight( 0xffffff, 0.2 ) );
     const sun_light = new THREE.PointLight( 0xffffff, 10, 0, 0 );
@@ -280,12 +281,21 @@ function main()
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild( renderer.domElement ); 
 
-    controls = new MapControls( camera, labelRenderer.domElement );
-    controls.enableRotate = false;
+    controls = new OrbitControls( camera, labelRenderer.domElement );
+    // controls.enableRotate = false;
     controls.zoomToCursor = true;
     controls.enableDamping = false;
     controls.zoomSpeed = 2.0;
     controls.panSpeed = 1.0;
+    controls.target = initial_center;
+    controls.update();
+
+    const sectors = 16;
+    const rings = 8;
+    const divisions = 64;
+    const gridHelper = new THREE.PolarGridHelper( 20, sectors, rings, divisions );
+    gridHelper.position.set(initial_center.x, initial_center.y, initial_center.z);
+    scene.add( gridHelper );
 
     function animate() {
         requestAnimationFrame( animate );
