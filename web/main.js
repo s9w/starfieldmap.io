@@ -17,8 +17,7 @@ let container = document.getElementById('glContainer');
 let raycaster;
 const pointer = new THREE.Vector2(99, 99);
 let intersection_obj;
-let system_data;
-let star_data;
+let all_data;
 let mode = "galaxy";
 
 function click_home()
@@ -243,13 +242,11 @@ async function get_and_process_data(scene)
     );
     const compressed = new Uint8Array(compressedBuf);
     var string = new TextDecoder().decode(fzstd.decompress(compressed));
-    var payload = JSON.parse(string);
-    for (const [key, value] of Object.entries(payload.stars))
+    all_data = JSON.parse(string);
+    for (const [key, value] of Object.entries(all_data))
     {
         add_galaxy_view_star(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key);
     }
-    system_data = payload.systems;
-    star_data = payload.stars;
 }
 
 function main()

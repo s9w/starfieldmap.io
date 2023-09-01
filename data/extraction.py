@@ -1,5 +1,5 @@
 import numpy as np
-import json
+import json, paramiko, zstd
 from pydoc import locate
 
 space_extraction_path = "S:\\bae_Extracts\\misc\\space\\"
@@ -30,13 +30,13 @@ galaxy_data = galaxy_csv[1:]
 
 sun_radius = 696340 # TODO not exactly right, they seem to use a slightly different number
 
-star_data = {}
+everything = {}
 star_id_to_name = {}
 for row in stars_data:
     name = get_stars_data("proper", row)
     if name != "":
         star_id_to_name[get_stars_data("id", row, "int")] = name
-        star_data[name] = {
+        everything[name] = {
             "position": [-get_stars_data("x", row, "float"), get_stars_data("y", row, "float"), -get_stars_data("z", row, "float")],
 
             "level": "TODO",
@@ -88,9 +88,9 @@ for row in galaxy_data:
         planet = get_planet_moon_data(row)
         planet["moons"] = {}
         planet_name = get_galaxy_data("Name", row)
-        planet_index = len(star_data[star_name]["planets"])
+        planet_index = len(everything[star_name]["planets"])
         planet_indices[planet_name] = 1 + planet_index
-        star_data[star_name]["planets"][planet_name] = planet
+        everything[star_name]["planets"][planet_name] = planet
 
 # moons
 for row in galaxy_data:
@@ -99,10 +99,36 @@ for row in galaxy_data:
         moon_name = get_galaxy_data("Name", row)
         primary = get_galaxy_data("Primary", row, "int")
         moon = get_planet_moon_data(row)
-        for planet_name in star_data[star_name]["planets"].keys():
+        for planet_name in everything[star_name]["planets"].keys():
             if planet_indices[planet_name] == primary:
-                star_data[star_name]["planets"][planet_name]["moons"][moon_name] = moon
+                everything[star_name]["planets"][planet_name]["moons"][moon_name] = moon
 
+# planet and moon count
+for star_data in everything.values():
+    star_data["planet_count"] = len(star_data["planets"])
+    moon_count = 0
+    for planet in star_data["planets"].values():
+        moon_count += len(planet["moons"])
+    star_data["moon_count"] = moon_count
 
-with open("everything.json", "w") as out_f:
-    json.dump(star_data, out_f, indent=2)
+# with open("everything.json", "w") as out_f:
+#     json.dump(everything, out_f, indent=2)
+
+# compression
+uncompressed_str = json.dumps(everything, separators=(',', ':'))
+compressed_str = zstd.ZSTD_compress(bytes(uncompressed_str, 'utf-8'))
+with open("data", mode="wb") as file:
+    file.write(compressed_str)
+
+# Credential load
+with open('../local_stuff/secrets.json', mode='r', encoding='UTF-8') as file:
+    secrets = json.load(file)
+
+# Upload compressed json payload to ftp
+print("uploading data...", end="", flush=True)
+with paramiko.SSHClient() as ssh_client:
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh_client.connect(hostname=secrets["ftp_hostname"], username=secrets["ftp_username"], password=secrets["ftp_password"])
+    with ssh_client.open_sftp() as ftp:
+        files = ftp.put("data", "data")
+print("done")
