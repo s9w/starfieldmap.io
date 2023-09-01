@@ -280,7 +280,7 @@ function main()
 {
     scene = new THREE.Scene();
     raycaster = new THREE.Raycaster();
-    let initial_center = new THREE.Vector3(10,-10,0);
+    let initial_center = new THREE.Vector3(10, 10, 0);
     camera.position.set( initial_center.x, initial_center.y+30, initial_center.z+30 );
 
     scene.add( new THREE.AmbientLight( 0xffffff, 0.2 ) );

@@ -37,7 +37,7 @@ for row in stars_data:
     if name != "":
         star_id_to_name[get_stars_data("id", row, "int")] = name
         everything[name] = {
-            "position": [-get_stars_data("x", row, "float"), get_stars_data("y", row, "float"), -get_stars_data("z", row, "float")],
+            "position": [-get_stars_data("x", row, "float"), -get_stars_data("y", row, "float"), -get_stars_data("z", row, "float")],
 
             "level": "TODO",
             "spectral_class": get_stars_data("spect", row),
