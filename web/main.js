@@ -297,7 +297,7 @@ function main()
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild( renderer.domElement ); 
 
-    controls = new OrbitControls( camera, labelRenderer.domElement );
+    controls = new OrbitControls( camera, renderer.domElement );
     // controls.enableRotate = false;
     controls.zoomToCursor = false;
     controls.enableDamping = false;
