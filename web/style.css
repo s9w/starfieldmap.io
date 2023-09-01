@@ -57,8 +57,10 @@ body{
 }
 
 #infobox{
+    z-index: 99;
     position: absolute;
     left: 1em;
+    top: 7em;
     background-color: rgba(0, 0, 0, 0.5);
     color: #ffffffba;;
     text-transform: uppercase;

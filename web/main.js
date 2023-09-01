@@ -75,6 +75,10 @@ function set_infobox_star(star_name, all_data)
     attrib_list_el.appendChild(get_infobox_attrib_el("planets", all_data["planet_count"]));
     attrib_list_el.appendChild(get_infobox_attrib_el("moons", all_data["moon_count"]));
     infobox_el.appendChild(attrib_list_el);
+
+    let button = get_new_elem("button", "goto_system");
+    button.addEventListener("click", function(){activate_system(star_name); });
+    infobox_el.appendChild(button);
 }
 
 function highlight_obj(obj, with_label, from_type)
@@ -350,8 +354,7 @@ function onWindowResize() {
     labelRenderer.setSize( container.clientWidth, container.clientHeight );
 }
 
-
-container.addEventListener( 'click', on_container_click );
+labelRenderer.domElement.addEventListener( 'click', on_container_click );
 document.addEventListener( 'mousemove', onPointerMove );
 window.addEventListener("load", (event) => {
     main();
