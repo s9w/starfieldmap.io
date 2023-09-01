@@ -44,7 +44,7 @@ for row in stars_data:
             "catalogue_id": get_stars_data("gl", row),
             "temperature": get_stars_data("Temp", row),
             "mass": get_stars_data("mass", row),
-            "radius": sun_radius * get_stars_data("radius", row, "float"),
+            "radius": int(sun_radius * get_stars_data("radius", row, "float")),
             "magnitude": get_stars_data("absmag", row),
             "planets": {},
             "traits": "TODO",

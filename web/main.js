@@ -51,14 +51,14 @@ function get_infobox_attrib_el(attrib_name, attrib_value)
     return row;
 }
 
-function set_infobox_star(star_name, star_data)
+function set_infobox_star(star_name, all_data)
 {
     let infobox_el = document.getElementById("infobox");
     infobox_el.textContent = "";
 
     let level_indicator = get_new_elem("div", null, "level_indicator");
     level_indicator.appendChild(get_new_elem("div", "LEVEL"));
-    level_indicator.appendChild(get_new_elem("div", star_data["level"]));
+    level_indicator.appendChild(get_new_elem("div", all_data["level"]));
     infobox_el.appendChild(level_indicator);
 
     
@@ -66,13 +66,13 @@ function set_infobox_star(star_name, star_data)
 
     let attrib_list_el = get_new_elem("div");
     attrib_list_el.id = "infobox_list";
-    attrib_list_el.appendChild(get_infobox_attrib_el("spectral_class", star_data["spectral class"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("temperature", `${star_data["temperature"]}K`));
-    attrib_list_el.appendChild(get_infobox_attrib_el("mass", `${star_data["mass"]}SM`));
-    attrib_list_el.appendChild(get_infobox_attrib_el("radius", star_data["radius"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("magnitude", star_data["magnitude"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("planets", star_data["planets"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("moons", star_data["moons"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("spectral_class", all_data["spectral_class"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("temperature", `${all_data["temperature"]}K`));
+    attrib_list_el.appendChild(get_infobox_attrib_el("mass", `${all_data["mass"]}SM`));
+    attrib_list_el.appendChild(get_infobox_attrib_el("radius", all_data["radius"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("magnitude", all_data["magnitude"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("planets", all_data["planet_count"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("moons", all_data["moon_count"]));
     infobox_el.appendChild(attrib_list_el);
 }
 
@@ -81,7 +81,7 @@ function highlight_obj(obj, with_label, from_type)
     if(mode != "galaxy" && from_type == "star")
         return;
     document.getElementById("infobox").classList.add("active");
-    set_infobox_star(obj.name, star_data[obj.name]);
+    set_infobox_star(obj.name, all_data[obj.name]);
     obj.material.opacity = 1.0;
     if(with_label)
     {
