@@ -63,8 +63,16 @@ def get_star_name_from_galaxy_row(row):
         return star_id_to_name[star_id]
 
 magnetosphere_lookup = {
+    "": "none",
+    "None": "none",
+    "Very Weak": "average",
+    "Weak": "weak",
+    "Average": "average",
+    "Powerful": "strong",
+    "Strong": "very strong",
     "Very Strong" : "powerful",
-    "Weak": "strong" # TODO: this seems wrong, bad lookup?
+    "Massive": "extreme",
+    "Extreme": "massive"
 }
 
 def get_planet_moon_data(row):
@@ -73,7 +81,7 @@ def get_planet_moon_data(row):
             "gravity": get_galaxy_data("Gravity", row, "float"),
             "temperature": "TODO", # probably f("Heat")
             "atmosphere": "TODO", # probably f"Atmos. Handle"
-            "magnetosphere": magnetosphere_lookup.get(get_galaxy_data("Mag. Field", row), "TODO"),
+            "magnetosphere": magnetosphere_lookup[get_galaxy_data("Mag. Field", row)],
             "fauna": "TODO",
             "flora": "TODO",
             "water": "TODO", # probably f("Hydro %")
@@ -85,9 +93,11 @@ def get_planet_moon_data(row):
         }
 
 # planets
+total_body_count = 0
 planet_indices = {}
 for row in galaxy_data:
     if get_galaxy_data("Body Type", row) == "2":
+        total_body_count += 1
         star_name = get_star_name_from_galaxy_row(row)
         planet = get_planet_moon_data(row)
         planet["moons"] = {}
@@ -99,6 +109,7 @@ for row in galaxy_data:
 # moons
 for row in galaxy_data:
     if get_galaxy_data("Body Type", row) == "3":
+        total_body_count += 1
         star_name = get_star_name_from_galaxy_row(row)
         moon_name = get_galaxy_data("Name", row)
         primary = get_galaxy_data("Primary", row, "int")
@@ -106,6 +117,7 @@ for row in galaxy_data:
         for planet_name in everything[star_name]["planets"].keys():
             if planet_indices[planet_name] == primary:
                 everything[star_name]["planets"][planet_name]["moons"][moon_name] = moon
+print("total_body_count", total_body_count)
 
 # planet and moon count
 for star_data in everything.values():
