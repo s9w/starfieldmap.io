@@ -20,6 +20,7 @@ let intersection_obj;
 let all_data;
 let mode = "galaxy";
 let last_activation_ts;
+let gridHelper;
 
 function click_home()
 {
@@ -32,6 +33,7 @@ function click_home()
         star.visible = true;
         star.children[0].visible = true;
     }
+    gridHelper.visible = true;
 }
 
 function get_new_elem(type, content=null, classlist=null)
@@ -113,7 +115,7 @@ function xy_zero_orbit_controls(orbit_controls, new_height)
 }
 
 function get_visual_radius(real_radius){
-    return 50.0;
+    return 5.0;
 }
 
 function add_system_body(color, radius, dist_from_sun, angle, planet_index, receives_shadow)
@@ -166,15 +168,16 @@ function activate_system(star_name)
         star.visible = false;
         star.children[0].visible = false;
     }
+    gridHelper.visible = false;
     controls.saveState();
     controls.enableZoom = true;
-    xy_zero_orbit_controls(controls, 1000.0);
+    xy_zero_orbit_controls(controls, 100.0);
 
     planets_group.clear();
     let planet_index = 0;
     for (const [key, value] of Object.entries(all_data[star_name]["planets"]))
     {
-        let distance_from_sun = 100.0 * (planet_index + 1);
+        let distance_from_sun = 10.0 * (planet_index + 1);
         add_system_body(0x407945, value["radius"], distance_from_sun, value["start_angle"], planet_index, true);
         add_planet_orbit(new THREE.Vector3(), distance_from_sun, planets_group);
         ++planet_index;
@@ -309,7 +312,7 @@ function main()
     const sectors = 16;
     const rings = 8;
     const divisions = 64;
-    const gridHelper = new THREE.PolarGridHelper( 20, sectors, rings, divisions );
+    gridHelper = new THREE.PolarGridHelper( 20, sectors, rings, divisions );
     gridHelper.position.set(initial_center.x, initial_center.y, initial_center.z);
     scene.add( gridHelper );
 
