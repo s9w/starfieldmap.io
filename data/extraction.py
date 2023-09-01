@@ -45,7 +45,7 @@ for row in stars_data:
             "temperature": get_stars_data("Temp", row),
             "mass": get_stars_data("mass", row),
             "radius": int(sun_radius * get_stars_data("radius", row, "float")),
-            "magnitude": get_stars_data("absmag", row),
+            "magnitude": get_stars_data("absmag", row, "float"),
             "planets": {},
 
             "traits": "TODO",
@@ -80,7 +80,7 @@ def get_planet_moon_data(row):
             "type": get_galaxy_data("Type", row),
             "gravity": get_galaxy_data("Gravity", row, "float"),
             "temperature": "TODO", # probably f("Heat")
-            "atmosphere": "TODO", # probably f"Atmos. Handle"
+            "atmosphere": "TODO",
             "magnetosphere": magnetosphere_lookup[get_galaxy_data("Mag. Field", row)],
             "fauna": "TODO",
             "flora": "TODO",

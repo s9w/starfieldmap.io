@@ -33,12 +33,12 @@ function click_home()
     }
 }
 
-function get_new_elem(type, content="", classlist="")
+function get_new_elem(type, content=null, classlist=null)
 {
     let result = document.createElement(type);
-    if(content)
+    if(content != null)
         result.textContent = content;
-    if(classlist)
+    if(classlist != null)
         result.classList = classlist;
     return result;
 }
@@ -70,7 +70,7 @@ function set_infobox_star(star_name, all_data)
     attrib_list_el.appendChild(get_infobox_attrib_el("temperature", `${all_data["temperature"]}K`));
     attrib_list_el.appendChild(get_infobox_attrib_el("mass", `${all_data["mass"]}SM`));
     attrib_list_el.appendChild(get_infobox_attrib_el("radius", all_data["radius"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("magnitude", all_data["magnitude"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("magnitude", all_data["magnitude"].toFixed(2)));
     attrib_list_el.appendChild(get_infobox_attrib_el("planets", all_data["planet_count"]));
     attrib_list_el.appendChild(get_infobox_attrib_el("moons", all_data["moon_count"]));
     infobox_el.appendChild(attrib_list_el);
@@ -105,7 +105,7 @@ function unhighlight_obj(obj, with_label, from_type)
 function xy_zero_orbit_controls(orbit_controls, new_height)
 {
     let cam = orbit_controls.object;
-    cam.position.set(0, new_height, 0);
+    cam.position.set(0, new_height, new_height);
     orbit_controls.target.set(0, orbit_controls.target.y, 0);
     orbit_controls.update();
 }
@@ -283,7 +283,7 @@ function main()
 
     controls = new OrbitControls( camera, labelRenderer.domElement );
     // controls.enableRotate = false;
-    controls.zoomToCursor = true;
+    controls.zoomToCursor = false;
     controls.enableDamping = false;
     controls.zoomSpeed = 2.0;
     controls.panSpeed = 1.0;
