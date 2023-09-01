@@ -12,6 +12,7 @@ def get_column_index(name, row, type="str"):
 csv = np.loadtxt(space_extraction_path+"stars.csv", dtype=str, delimiter=",")
 columns = csv[0]
 data = csv[1:]
+sun_radius = 696340 # TODO not exactly right, they seem to use a slightly different number
 
 positions = []
 star_data = {}
@@ -30,10 +31,12 @@ for row in data:
             "catalogue_id": get_column_index("gl", row),
             "temperature": get_column_index("Temp", row),
             "mass": get_column_index("mass", row),
-            "radius": "TODO",
+            "radius": sun_radius * get_column_index("radius", row, "float"),
             "magnitude": get_column_index("absmag", row),
             "planets": "TODO",
-            "moons": "TODO"
+            "moons": "TODO",
+            "traits": "TODO",
+            "resources": "TODO"
             }
 
 with open("star_positions.json", "w") as out_f:
