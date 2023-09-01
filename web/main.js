@@ -67,7 +67,7 @@ function set_infobox_star(star_name, star_data)
 
     let attrib_list_el = get_new_elem("div");
     attrib_list_el.id = "infobox_list";
-    attrib_list_el.appendChild(get_infobox_attrib_el("spectral class", star_data["spectral class"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("spectral_class", star_data["spectral class"]));
     attrib_list_el.appendChild(get_infobox_attrib_el("temperature", `${star_data["temperature"]}K`));
     attrib_list_el.appendChild(get_infobox_attrib_el("mass", `${star_data["mass"]}SM`));
     attrib_list_el.appendChild(get_infobox_attrib_el("radius", star_data["radius"]));
@@ -206,7 +206,7 @@ function add_galaxy_view_star(scene, position, name)
     sprite.name = name;
     sprite.userData["type"] = "star";
     
-    const sprite_size = 0.05;
+    const sprite_size = 0.02;
     sprite.scale.set( sprite_size, sprite_size, sprite_size );
 
     const text_div_el = document.createElement( 'div' );
