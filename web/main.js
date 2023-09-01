@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { OrbitControls } from './orbitcontrols_fixed.js';
 import { CSS2DRenderer, CSS2DObject  } from 'three/addons/renderers/CSS2DRenderer.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
@@ -297,7 +297,7 @@ function main()
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild( renderer.domElement ); 
 
-    controls = new OrbitControls( camera, renderer.domElement );
+    controls = new OrbitControls( camera, labelRenderer.domElement );
     // controls.enableRotate = false;
     controls.zoomToCursor = false;
     controls.enableDamping = false;
