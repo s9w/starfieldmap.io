@@ -19,6 +19,7 @@ const pointer = new THREE.Vector2(99, 99);
 let intersection_obj;
 let all_data;
 let mode = "galaxy";
+let last_activation_ts;
 
 function click_home()
 {
@@ -80,8 +81,6 @@ function highlight_obj(obj, with_label, from_type)
 {
     if(mode != "galaxy" && from_type == "star")
         return;
-    document.getElementById("infobox").classList.add("active");
-    set_infobox_star(obj.name, all_data[obj.name]);
     obj.material.opacity = 1.0;
     if(with_label)
     {
@@ -93,7 +92,6 @@ function unhighlight_obj(obj, with_label, from_type)
 {
     if(mode != "galaxy" && from_type == "star")
         return;
-    document.getElementById("infobox").classList.remove("active");
     obj.material.opacity = 0.5;
     if(with_label)
     {
@@ -183,7 +181,11 @@ function activate_system(star_name)
 
 function on_label_click(name)
 {
-    activate_system(name);
+    set_infobox_star(name, all_data[name]);
+    document.getElementById("infobox").classList.add("active");
+    last_activation_ts = Date.now();
+
+    // activate_system(name);
 }
 function on_label_mouseover(event, name)
 {
@@ -197,7 +199,17 @@ function on_label_mouseout(event, name)
 function on_container_click()
 {
     if(intersection_obj !== null)
-        activate_system(intersection_obj.name);
+    {
+        set_infobox_star(intersection_obj.name, all_data[intersection_obj.name]);
+        last_activation_ts = Date.now();
+        document.getElementById("infobox").classList.add("active");
+    }
+    else
+    {
+        if((Date.now() - last_activation_ts) > 200)
+            document.getElementById("infobox").classList.remove("active");
+
+    }
 }
 
 
