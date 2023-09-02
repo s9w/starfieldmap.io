@@ -23,6 +23,7 @@ body{
     font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;
 }
 #glContainer{
+    z-index: 0;
     flex-grow: 1;
     position: relative;
     background: rgb(37,46,51);
