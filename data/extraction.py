@@ -27,6 +27,8 @@ galaxy_data = galaxy_csv[1:]
 # warning: "Settled" and "Star ID" aren't always set for moons, but either one always is
 # TODO: I can'T see the asteroid belt in Alpha CEntauri for example
 
+with open('levels.json', mode='r', encoding='UTF-8') as file:
+    levels = {k: v for k, v in json.load(file).items() if v != "TODO"}
 
 sun_radius = 696340 # TODO not exactly right, they seem to use a slightly different number
 
@@ -39,7 +41,7 @@ for row in stars_data:
         everything[name] = {
             "position": [-get_stars_data("x", row, "float"), -get_stars_data("y", row, "float"), -get_stars_data("z", row, "float")],
 
-            "level": "TODO",
+            "level": levels.get(name, "TODO"),
             "spectral_class": get_stars_data("spect", row),
             "catalogue_id": get_stars_data("gl", row),
             "temperature": get_stars_data("Temp", row),
