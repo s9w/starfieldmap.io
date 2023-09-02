@@ -22,6 +22,9 @@ body{
     overflow: hidden;
     font-family: 'ProFontWindows V1', Arial, Helvetica, sans-serif;
 }
+#intro{
+    font-family: Arial, Helvetica, sans-serif;
+}
 #glContainer{
     z-index: 0;
     flex-grow: 1;
