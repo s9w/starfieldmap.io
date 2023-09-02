@@ -122,14 +122,13 @@ function xy_zero_orbit_controls(orbit_controls, new_height)
     orbit_controls.update();
 }
 
-function get_visual_radius(real_radius){
-    return 5.0;
-}
+// function get_visual_radius(real_radius){
+//     return 5.0;
+// }
 
-function add_system_body(color, radius, dist_from_sun, angle, planet_index, receives_shadow)
+function add_system_body(color, radius, pos, receives_shadow)
 {
-    let pos = [dist_from_sun * Math.cos(angle), 0, dist_from_sun * Math.sin(angle)];
-    const geometry = new THREE.SphereGeometry( get_visual_radius(radius), 24, 8 );
+    const geometry = new THREE.SphereGeometry( radius, 24, 8 );
     let material;
     if(receives_shadow == false)
         material = new THREE.MeshBasicMaterial( { color: color } ); 
@@ -138,7 +137,7 @@ function add_system_body(color, radius, dist_from_sun, angle, planet_index, rece
     const sphere = new THREE.Mesh( geometry, material );
     sphere.receiveShadow = receives_shadow;
     planets_group.add( sphere );
-    sphere.position.set(pos[0], pos[1], pos[2]);
+    sphere.position.set(pos.x, pos.y, pos.z);
 }
 
 
@@ -183,14 +182,25 @@ function activate_system(star_name)
 
     planets_group.clear();
     let planet_index = 0;
-    for (const [key, value] of Object.entries(all_data[star_name]["planets"]))
+    for (const [key, planet] of Object.entries(all_data[star_name]["planets"]))
     {
-        let distance_from_sun = 10.0 * (planet_index + 1);
-        add_system_body(0x407945, value["radius"], distance_from_sun, value["start_angle"], planet_index, true);
-        add_planet_orbit(new THREE.Vector3(), distance_from_sun, planets_group);
+        let dist_from_sun = 10.0 * (planet_index + 1);
+        let planet_pos = new THREE.Vector3(dist_from_sun * Math.cos(planet["start_angle"]), 0.0, dist_from_sun * Math.sin(planet["start_angle"]) );
+        add_system_body(0x407945, 4, planet_pos, true);
+        add_planet_orbit(new THREE.Vector3(), dist_from_sun, planets_group);
         ++planet_index;
+        console.log("planet_pos: " + planet_pos.toArray());
+
+        for (const [moon_key, moon] of Object.entries(planet["moons"]))
+        {
+            let distance_from_planet = 6.0;
+            let moon_pos = new THREE.Vector3();
+            moon_pos.copy(planet_pos); // JS is absolutely insane
+            moon_pos.add(new THREE.Vector3(distance_from_planet * Math.cos(moon["start_angle"]), 0.0, distance_from_planet * Math.sin(moon["start_angle"]) ) );
+            add_system_body(0x808080, 1.5, moon_pos, true);
+        }
     }
-    add_system_body(0xffff80, 999, 0, 0, 0, false);
+    add_system_body(0xffff80, 4, new THREE.Vector3(), false);
     scene.add( planets_group );
 }
 
