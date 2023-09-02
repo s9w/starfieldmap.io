@@ -54,6 +54,14 @@ function get_infobox_attrib_el(attrib_name, attrib_value)
     return row;
 }
 
+
+// starfield seems to actually truncate numbers and not round them
+function get_fixed_trunc(number, digits)
+{
+    return Math.trunc(number*Math.pow(10, digits))/Math.pow(10, digits)
+}
+
+
 function set_infobox_star(star_name, all_data)
 {
     let infobox_el = document.getElementById("infobox");
@@ -71,9 +79,9 @@ function set_infobox_star(star_name, all_data)
     attrib_list_el.id = "infobox_list";
     attrib_list_el.appendChild(get_infobox_attrib_el("spectral_class", all_data["spectral_class"]));
     attrib_list_el.appendChild(get_infobox_attrib_el("temperature", `${all_data["temperature"]}K`));
-    attrib_list_el.appendChild(get_infobox_attrib_el("mass", `${all_data["mass"]}SM`));
+    attrib_list_el.appendChild(get_infobox_attrib_el("mass", `${get_fixed_trunc(all_data["mass"], 2)}SM`));
     attrib_list_el.appendChild(get_infobox_attrib_el("radius", all_data["radius"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("magnitude", all_data["magnitude"].toFixed(2)));
+    attrib_list_el.appendChild(get_infobox_attrib_el("magnitude", get_fixed_trunc(all_data["magnitude"], 2)));
     attrib_list_el.appendChild(get_infobox_attrib_el("planets", all_data["planet_count"]));
     attrib_list_el.appendChild(get_infobox_attrib_el("moons", all_data["moon_count"]));
     infobox_el.appendChild(attrib_list_el);

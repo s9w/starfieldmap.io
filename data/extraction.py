@@ -43,7 +43,7 @@ for row in stars_data:
             "spectral_class": get_stars_data("spect", row),
             "catalogue_id": get_stars_data("gl", row),
             "temperature": get_stars_data("Temp", row),
-            "mass": get_stars_data("mass", row),
+            "mass": get_stars_data("mass", row, "float"),
             "radius": int(sun_radius * get_stars_data("radius", row, "float")),
             "magnitude": get_stars_data("absmag", row, "float"),
             "planets": {},
