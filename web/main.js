@@ -62,14 +62,14 @@ function get_fixed_trunc(number, digits)
 }
 
 
-function set_infobox_star(star_name, all_data)
+function set_infobox_star(star_name, star)
 {
     let infobox_el = document.getElementById("infobox");
     infobox_el.textContent = "";
 
     let level_indicator = get_new_elem("div", null, "level_indicator");
     level_indicator.appendChild(get_new_elem("div", "LEVEL"));
-    level_indicator.appendChild(get_new_elem("div", all_data["level"]));
+    level_indicator.appendChild(get_new_elem("div", star["level"]));
     infobox_el.appendChild(level_indicator);
 
     
@@ -77,13 +77,13 @@ function set_infobox_star(star_name, all_data)
 
     let attrib_list_el = get_new_elem("div");
     attrib_list_el.id = "infobox_list";
-    attrib_list_el.appendChild(get_infobox_attrib_el("spectral_class", all_data["spectral_class"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("temperature", `${all_data["temperature"]}K`));
-    attrib_list_el.appendChild(get_infobox_attrib_el("mass", `${get_fixed_trunc(all_data["mass"], 2)}SM`));
-    attrib_list_el.appendChild(get_infobox_attrib_el("radius", all_data["radius"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("magnitude", get_fixed_trunc(all_data["magnitude"], 2)));
-    attrib_list_el.appendChild(get_infobox_attrib_el("planets", all_data["planet_count"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("moons", all_data["moon_count"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("spectral_class", star["spectral_class"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("temperature", `${star["temperature"]}K`));
+    attrib_list_el.appendChild(get_infobox_attrib_el("mass", `${get_fixed_trunc(star["mass"], 2)}SM`));
+    attrib_list_el.appendChild(get_infobox_attrib_el("radius", star["radius"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("magnitude", get_fixed_trunc(star["magnitude"], 2)));
+    attrib_list_el.appendChild(get_infobox_attrib_el("planets", star["planet_count"]));
+    attrib_list_el.appendChild(get_infobox_attrib_el("moons", star["moon_count"]));
     infobox_el.appendChild(attrib_list_el);
 
     let button = get_new_elem("button", "goto_system");
@@ -182,7 +182,7 @@ function activate_system(star_name)
 
     planets_group.clear();
     let planet_index = 0;
-    for (const [key, planet] of Object.entries(all_data[star_name]["planets"]))
+    for (const [key, planet] of Object.entries(all_data["stars"][star_name]["planets"]))
     {
         let dist_from_sun = 10.0 * (planet_index + 1);
         let planet_pos = new THREE.Vector3(dist_from_sun * Math.cos(planet["start_angle"]), 0.0, dist_from_sun * Math.sin(planet["start_angle"]) );
@@ -206,7 +206,7 @@ function activate_system(star_name)
 
 function on_label_click(name)
 {
-    set_infobox_star(name, all_data[name]);
+    set_infobox_star(name, all_data["stars"][name]);
     document.getElementById("infobox").classList.add("active");
     last_activation_ts = Date.now();
 
@@ -225,7 +225,7 @@ function on_container_click()
 {
     if(intersection_obj !== null)
     {
-        set_infobox_star(intersection_obj.name, all_data[intersection_obj.name]);
+        set_infobox_star(intersection_obj.name, all_data["stars"][intersection_obj.name]);
         last_activation_ts = Date.now();
         document.getElementById("infobox").classList.add("active");
     }
@@ -288,7 +288,7 @@ async function get_and_process_data(scene)
     const compressed = new Uint8Array(compressedBuf);
     var string = new TextDecoder().decode(fzstd.decompress(compressed));
     all_data = JSON.parse(string);
-    for (const [key, value] of Object.entries(all_data))
+    for (const [key, value] of Object.entries(all_data["stars"]))
     {
         add_galaxy_view_star(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key);
     }
@@ -299,7 +299,7 @@ function main()
     scene = new THREE.Scene();
     raycaster = new THREE.Raycaster();
     let initial_center = new THREE.Vector3(10, 10, 0);
-    camera.position.set( initial_center.x, initial_center.y+30, initial_center.z+30 );
+    camera.position.set( initial_center.x, initial_center.y+20, initial_center.z+20 );
 
     scene.add( new THREE.AmbientLight( 0xffffff, 0.2 ) );
     const sun_light = new THREE.PointLight( 0xffffff, 10, 0, 0 );

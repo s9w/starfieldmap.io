@@ -42,52 +42,64 @@ def parse_resources():
                 next_resource["crafting_text"] = get_between(line, "\"", "\"")
     return resources
 resources = parse_resources()
-print(list(resources.items())[0])
+print("resources", list(resources.items())[0])
 # print(resources)
 
 def parse_resource_generators():
     resource_generators = {}
     next_id = ""
     next_rgen = {}
+    def finisher(line):
+        nonlocal next_id
+        nonlocal next_rgen
+        if len(next_rgen) > 0:
+            resource_generators[next_id] = next_rgen
+            next_id = ""
+            next_rgen = {}
+        
     with open(starfield_dir+"out_resource_generation.txt", "r") as f:
         for line in f.readlines():
             line = line.rstrip('\n')
             line = line.lstrip(" ")
             if line.startswith("FormID: RSGD - Resource Generation Data"):
-                if len(next_rgen) > 0:
-                    resource_generators[next_id] = next_rgen
-                    next_id = ""
-                    next_rgen = {}
+                finisher(line)
                 next_id = get_between(line, "[", "]")
             if "RNAM - Resource: IRES - Resource" in line:
                 next_rgen["res_formid"] = get_between(line, "[", "]")
+        finisher(line)
+            
     return resource_generators
 resource_generators = parse_resource_generators()
-print(list(resource_generators.items())[0])
-# print(resource_generators)
+print("res generators", list(resource_generators.items())[0])
 
 def parse_biomes():
     biomes = {}
     next_id = ""
     next_biome = {}
+    def finisher(line):
+        nonlocal next_id
+        nonlocal next_biome
+        if len(next_biome) > 0:
+            biomes[next_id] = next_biome
+            next_id = ""
+            next_biome = {}
     with open(starfield_dir+"out_biomes.txt", "r") as f:
         for line in f.readlines():
             line = line.rstrip('\n')
             line = line.lstrip(" ")
             if line.startswith("FormID: BIOM - Biome"):
-                if len(next_biome) > 0:
-                    biomes[next_id] = next_biome
-                    next_id = ""
-                    next_biome = {}
+                finisher(line)
                 next_id = get_between(line, "[", "]")
             extract(line, "FULL - Name", "name", next_biome, str)
             if "RSGD - Resource Generation Data" in line:
                 next_biome["resgen_formid"] = get_between(line, "[", "]")
+        finisher(line)
     return biomes
 biomes = parse_biomes()
-print(list(biomes.items())[0])
+biome_names = {key:value["name"] for (key, value) in biomes.items()}
+print("biomes", list(biomes.items())[0])
 
-everything = {}
+stars = {}
 next_star = {"planets": {}}
 
 with open(starfield_dir+"out_stars.txt", "r") as f:
@@ -103,7 +115,7 @@ with open(starfield_dir+"out_stars.txt", "r") as f:
                 next_star["traits"] = None
                 for key in ["x", "y", "z", "star_id"]:
                     del next_star[key]
-                everything[next_key] = next_star
+                stars[next_key] = next_star
             next_star = {"planets": {}}
         extract(line, "FULL - Name", "name", next_star, str)
         extract(line, "DNAM - Star ID", "star_id", next_star, int)
@@ -130,7 +142,7 @@ with open(starfield_dir+"out_planets.txt", "r") as f:
         level = get_level(line)
         if line.startswith("EDID"):
             if "body_type" in new_planet and new_planet["body_type"] == "Planet":
-                everything[new_planet["star_id"]]["planets"][new_planet["planet_id"]] = new_planet
+                stars[new_planet["star_id"]]["planets"][new_planet["planet_id"]] = new_planet
             new_planet = {"moons": [], "biomes": []}
         
         extract(line, "FULL - Name", "name", new_planet, str)
@@ -163,7 +175,7 @@ with open(starfield_dir+"out_planets.txt", "r") as f:
         line = line.lstrip(" ")
         if line.startswith("EDID"):
             if "body_type" in new_moon and new_moon["body_type"] == "Moon":
-                everything[new_moon["star_id"]]["planets"][new_moon["primary_planet_id"]]["moons"].append(new_moon)
+                stars[new_moon["star_id"]]["planets"][new_moon["primary_planet_id"]]["moons"].append(new_moon)
             new_moon = {"biomes": []}
         
         extract(line, "FULL - Name", "name", new_moon, str)
@@ -188,13 +200,13 @@ with open(starfield_dir+"out_planets.txt", "r") as f:
             next_biome_percentage = None
 
 # Corrections after I don't need that silly layout anymore
-for key in list(everything.keys()):
-    value = everything[key]
+for key in list(stars.keys()):
+    value = stars[key]
     new_key = value["name"]
     del value["name"]
-    everything[new_key] = value
-    del everything[key]
-for star in everything.values():
+    stars[new_key] = value
+    del stars[key]
+for star in stars.values():
     moon_count = 0
     planet_count = 0
     for planet in star["planets"].values():
@@ -204,8 +216,30 @@ for star in everything.values():
     star["planet_count"] = planet_count
     star["moon_count"] = moon_count
 
+
+def add_to_star_resources(planet_or_star, star):
+    planet_or_star["resources"] = []
+    for planet_biome in planet_or_star["biomes"]:
+        biome = biomes[planet_biome["biome_id"]]
+        if "resgen_formid" in biome:
+            resgen = resource_generators[biome["resgen_formid"]]
+            res = resources[resgen["res_formid"]]
+            if res["name"] not in star["resources"]:
+                star["resources"].append(res["name"])
+            if res["name"] not in planet_or_star["resources"]:
+                planet_or_star["resources"].append(res["name"])
+
+# adding resources
+for star in stars.values():
+    star["resources"] = []
+    for planet in star["planets"].values():
+        add_to_star_resources(planet, star)
+        for moon in planet["moons"]:
+            add_to_star_resources(planet, star)
+
 # print(json.dumps(systems, indent=2))
 
+everything = {"stars": stars, "biome_names": biome_names}
 with open("everything.json", "w") as out_f:
     json.dump(everything, out_f, indent=2)
 
