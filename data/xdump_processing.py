@@ -66,7 +66,32 @@ def parse_resource_generators():
                 # next_rgen["embed"] = resources[line[left_pos+1:right_pos]]
     return resource_generators
 resource_generators = parse_resource_generators()
-print(resource_generators)
+# print(resource_generators)
+
+def parse_biomes():
+    biomes = {}
+    next_id = ""
+    next_biome = {}
+    with open(starfield_dir+"out_biomes.txt", "r") as f:
+        for line in f.readlines():
+            line = line.rstrip('\n')
+            line = line.lstrip(" ")
+            if line.startswith("FormID: BIOM - Biome"):
+                if True:
+                    biomes[next_id] = next_biome
+                    next_id = ""
+                    next_biome = {}
+                left_pos = line.find("[")
+                right_pos = line.find("]")
+                next_id = line[left_pos+1:right_pos]
+            extract(line, "FULL - Name", "name", next_biome, str)
+            if "RSGD - Resource Generation Data" in line:
+                left_pos = line.find("[")
+                right_pos = line.find("]")
+                next_biome["resgen_formid"] = line[left_pos+1:right_pos]
+    return biomes
+biomes = parse_biomes()
+# print(biomes)
 exit()
 
 systems = {}
