@@ -1,4 +1,4 @@
-import json
+import json, paramiko, zstd
 
 starfield_dir = "S:\SteamLibrary\steamapps\common\Starfield/"
 
@@ -18,6 +18,11 @@ def extract(line, prefix, name, target, t):
             result = t(line.replace(prefix+": ", ""))
         target[name] = result
 
+def get_between(line, left, right):
+    left_pos = line.find(left)
+    right_pos = line.rfind(right)
+    return line[left_pos+1:right_pos]
+
 def parse_resources():
     resources = {}
     next_resource = {}
@@ -27,20 +32,17 @@ def parse_resources():
             line = line.rstrip('\n')
             line = line.lstrip(" ")
             if line.startswith("FormID: IRES - Resource"):
-                if True:
+                if len(next_resource) > 0:
                     resources[next_id] = next_resource
                     next_id = ""
                     next_resource = {}
-                left_pos = line.find("[")
-                right_pos = line.find("]")
-                next_id = line[left_pos+1:right_pos]
+                next_id = get_between(line, "[", "]")
             extract(line, "FULL - Name", "name", next_resource, str)
             if "ResourceTypeCrafting" in line:
-                left_pos = line.find("\"")
-                right_pos = line.rfind("\"")
-                next_resource["crafting_text"] = line[left_pos+1:right_pos]
+                next_resource["crafting_text"] = get_between(line, "\"", "\"")
     return resources
 resources = parse_resources()
+print(list(resources.items())[0])
 # print(resources)
 
 def parse_resource_generators():
@@ -52,20 +54,16 @@ def parse_resource_generators():
             line = line.rstrip('\n')
             line = line.lstrip(" ")
             if line.startswith("FormID: RSGD - Resource Generation Data"):
-                if True:
+                if len(next_rgen) > 0:
                     resource_generators[next_id] = next_rgen
                     next_id = ""
                     next_rgen = {}
-                left_pos = line.find("[")
-                right_pos = line.find("]")
-                next_id = line[left_pos+1:right_pos]
+                next_id = get_between(line, "[", "]")
             if "RNAM - Resource: IRES - Resource" in line:
-                left_pos = line.find("[")
-                right_pos = line.find("]")
-                next_rgen["res_formid"] = line[left_pos+1:right_pos]
-                # next_rgen["embed"] = resources[line[left_pos+1:right_pos]]
+                next_rgen["res_formid"] = get_between(line, "[", "]")
     return resource_generators
 resource_generators = parse_resource_generators()
+print(list(resource_generators.items())[0])
 # print(resource_generators)
 
 def parse_biomes():
@@ -77,25 +75,21 @@ def parse_biomes():
             line = line.rstrip('\n')
             line = line.lstrip(" ")
             if line.startswith("FormID: BIOM - Biome"):
-                if True:
+                if len(next_biome) > 0:
                     biomes[next_id] = next_biome
                     next_id = ""
                     next_biome = {}
-                left_pos = line.find("[")
-                right_pos = line.find("]")
-                next_id = line[left_pos+1:right_pos]
+                next_id = get_between(line, "[", "]")
             extract(line, "FULL - Name", "name", next_biome, str)
             if "RSGD - Resource Generation Data" in line:
-                left_pos = line.find("[")
-                right_pos = line.find("]")
-                next_biome["resgen_formid"] = line[left_pos+1:right_pos]
+                next_biome["resgen_formid"] = get_between(line, "[", "]")
     return biomes
 biomes = parse_biomes()
-# print(biomes)
-exit()
+print(list(biomes.items())[0])
 
-systems = {}
+everything = {}
 next_star = {"planets": {}}
+
 with open(starfield_dir+"out_stars.txt", "r") as f:
     for line in f.readlines():
         level = get_level(line)
@@ -109,110 +103,110 @@ with open(starfield_dir+"out_stars.txt", "r") as f:
                 next_star["traits"] = None
                 for key in ["x", "y", "z", "star_id"]:
                     del next_star[key]
-                systems[next_key] = next_star
+                everything[next_key] = next_star
             next_star = {"planets": {}}
-        extract("FULL - Name", "name", next_star, str)
-        extract("DNAM - Star ID", "star_id", next_star, int)
-        extract("Spectral class", "spectral_class", next_star, str)
-        extract("Catalogue ID", "catalogue_id", next_star, str)
-        extract("Radius (in km)", "radius", next_star, float)
-        extract("Magnitude", "magnitude", next_star, float)
-        extract("Temperature in K", "temperature", next_star, int)
-        extract("Mass (in SM)", "mass", next_star, float)
-        extract("x", "x", next_star, float)
-        extract("y", "y", next_star, float)
-        extract("z", "z", next_star, float)
+        extract(line, "FULL - Name", "name", next_star, str)
+        extract(line, "DNAM - Star ID", "star_id", next_star, int)
+        extract(line, "Spectral class", "spectral_class", next_star, str)
+        extract(line, "Catalogue ID", "catalogue_id", next_star, str)
+        extract(line, "Radius (in km)", "radius", next_star, float)
+        extract(line, "Magnitude", "magnitude", next_star, float)
+        extract(line, "Temperature in K", "temperature", next_star, int)
+        extract(line, "Mass (in SM)", "mass", next_star, float)
+        extract(line, "x", "x", next_star, float)
+        extract(line, "y", "y", next_star, float)
+        extract(line, "z", "z", next_star, float)
+        
 
 # print(json.dumps(systems, indent=2))
 
-new_planet = {}
+new_planet = {"moons": [], "biomes": []}
+next_biome_id = None
+next_biome_percentage = None
+with open(starfield_dir+"out_planets.txt", "r") as f:
+    for line in f.readlines():
+        line = line.rstrip('\n')
+        line = line.lstrip(" ")
+        level = get_level(line)
+        if line.startswith("EDID"):
+            if "body_type" in new_planet and new_planet["body_type"] == "Planet":
+                everything[new_planet["star_id"]]["planets"][new_planet["planet_id"]] = new_planet
+            new_planet = {"moons": [], "biomes": []}
+        
+        extract(line, "FULL - Name", "name", new_planet, str)
+        extract(line, "CNAM - Body type", "body_type", new_planet, str)
+        extract(line, "GNAM - Visual size", "visual_size", new_planet, float)
+        extract(line, "Radius in km", "radius", new_planet, float)
+        extract(line, "Mass (in Earth Masses)", "mass", new_planet, float)
+        extract(line, "DENS - Density", "density", new_planet, float)
+        extract(line, "Gravity", "gravity", new_planet, float)
+        extract(line, "Star ID", "star_id", new_planet, int)
+        extract(line, "Planet ID", "planet_id", new_planet, int)
+        extract(line, "xxx", "xxx", new_planet, float)
+        extract(line, "GNAM - mystery", "gnam_mystery", new_planet, float)
+        extract(line, "x1", "hnam_float", new_planet, float)
+        if line.startswith("Unknown: BIOM - Biome"):
+            next_biome_id = get_between(line, "[", "]")
+        if line.startswith("Percentage: "):
+            next_biome_percentage = float(line.replace("Percentage: ", ""))
+        if level != 2 and next_biome_id != None and next_biome_percentage != None:
+            new_planet["biomes"].append({"percentage": next_biome_percentage, "biome_id": next_biome_id})
+            next_biome_id = None
+            next_biome_percentage = None
+
+# print(json.dumps(systems, indent=2))
+
+new_moon = {"biomes": []}
 with open(starfield_dir+"out_planets.txt", "r") as f:
     for line in f.readlines():
         line = line.rstrip('\n')
         line = line.lstrip(" ")
         if line.startswith("EDID"):
-            if len(new_planet) > 0 and new_planet["body_type"] == "Planet":
-                systems[new_planet["star_id"]]["planets"][new_planet["planet_id"]] = new_planet
-            new_planet = {"moons": []}
+            if "body_type" in new_moon and new_moon["body_type"] == "Moon":
+                everything[new_moon["star_id"]]["planets"][new_moon["primary_planet_id"]]["moons"].append(new_moon)
+            new_moon = {"biomes": []}
         
-        extract("FULL - Name", "name", new_planet, str)
-        extract("CNAM - Body type", "body_type", new_planet, str)
-        extract("GNAM - Visual size", "visual_size", new_planet, float)
-        extract("Radius in km", "radius", new_planet, float)
-        extract("Mass (in Earth Masses)", "mass", new_planet, float)
-        extract("DENS - Density", "density", new_planet, float)
-        extract("Gravity", "gravity", new_planet, float)
-        extract("Star ID", "star_id", new_planet, int)
-        extract("Planet ID", "planet_id", new_planet, int)
-        extract("xxx", "xxx", new_planet, float)
-        extract("GNAM - mystery", "gnam_mystery", new_planet, float)
-        extract("x1", "hnam_float", new_planet, float)
+        extract(line, "FULL - Name", "name", new_moon, str)
+        extract(line, "CNAM - Body type", "body_type", new_moon, str)
+        extract(line, "GNAM - Visual size", "visual_size", new_moon, float)
+        extract(line, "Radius in km", "radius", new_moon, float)
+        extract(line, "Mass (in Earth Masses)", "mass", new_moon, float)
+        extract(line, "DENS - Density", "density", new_moon, float)
+        extract(line, "Gravity", "gravity", new_moon, float)
+        extract(line, "Star ID", "star_id", new_moon, int)
+        extract(line, "Primary planet ID", "primary_planet_id", new_moon, int)
+        extract(line, "xxx", "xxx", new_moon, float)
+        extract(line, "GNAM - mystery", "gnam_mystery", new_moon, float)
+        extract(line, "x1", "hnam_float", new_moon, float)
+        if line.startswith("Unknown: BIOM - Biome"):
+            next_biome_id = get_between(line, "[", "]")
+        if line.startswith("Percentage: "):
+            next_biome_percentage = float(line.replace("Percentage: ", ""))
+        if level != 2 and next_biome_id != None and next_biome_percentage != None:
+            new_moon["biomes"].append({"percentage": next_biome_percentage, "biome_id": next_biome_id})
+            next_biome_id = None
+            next_biome_percentage = None
 
 # print(json.dumps(systems, indent=2))
 
-new_moon = {}
-with open(starfield_dir+"out_planets.txt", "r") as f:
-    for line in f.readlines():
-        line = line.rstrip('\n')
-        line = line.lstrip(" ")
-        if line.startswith("EDID"):
-            if len(new_moon) > 0 and new_moon["body_type"] == "Moon":
-                systems[new_moon["star_id"]]["planets"][new_moon["primary_planet_id"]]["moons"].append(new_moon)
-            new_moon = {}
-        
-        extract("FULL - Name", "name", new_moon, str)
-        extract("CNAM - Body type", "body_type", new_moon, str)
-        extract("GNAM - Visual size", "visual_size", new_moon, float)
-        extract("Radius in km", "radius", new_moon, float)
-        extract("Mass (in Earth Masses)", "mass", new_moon, float)
-        extract("DENS - Density", "density", new_moon, float)
-        extract("Gravity", "gravity", new_moon, float)
-        extract("Star ID", "star_id", new_moon, int)
-        extract("Primary planet ID", "primary_planet_id", new_moon, int)
-        extract("xxx", "xxx", new_moon, float)
-        extract("GNAM - mystery", "gnam_mystery", new_moon, float)
-        extract("x1", "hnam_float", new_moon, float)
+with open("everything.json", "w") as out_f:
+    json.dump(everything, out_f, indent=2)
 
+# compression
+uncompressed_str = json.dumps(everything, separators=(',', ':'))
+compressed_str = zstd.ZSTD_compress(bytes(uncompressed_str, 'utf-8'))
+with open("data", mode="wb") as file:
+    file.write(compressed_str)
 
-# for star_id, star in systems.items():
-#     if star["name"] == "Sol":
-#         # print(star)
-#         for planet in star["planets"].values():
-#             print(planet["name"], len(planet["moons"]))
-# exit()
+# Credential load
+with open('../local_stuff/secrets.json', mode='r', encoding='UTF-8') as file:
+    secrets = json.load(file)
 
-# list = sorted(stars.values(), key=lambda v: v.get("xxx", 0.0), reverse=True)
-# print(list[:5])
-
-# for star_id, system in systems.items():
-#     print("system", system["name"])
-#     for planet in system["planets"].values():
-#         print(f"index: {planet['planet_id']}: {planet['xxx']}")
-
-radius = []
-mass = []
-y = []
-hnam_floats = []
-planet_ids = []
-colors = []
-for star_id, system in systems.items():
-    for planet in system["planets"].values():
-        radius.append(planet["radius"])
-        mass.append(planet["mass"])
-        y.append(planet["gnam_mystery"])
-        hnam_floats.append(planet["hnam_float"])
-        planet_ids.append(planet["planet_id"])
-        colors.append("blue")
-
-        for moon in planet["moons"]:
-            radius.append(moon["radius"])
-            mass.append(moon["mass"])
-            y.append(moon["gnam_mystery"])
-            planet_ids.append(moon["primary_planet_id"])
-            hnam_floats.append(moon["hnam_float"])
-            colors.append("gray")
-
-        # if value["body_type"] == "Planet":
-        #     colors.append("blue")
-        # else:
-        #     colors.append("gray")
+# Upload compressed json payload to ftp
+print("uploading data...", end="", flush=True)
+with paramiko.SSHClient() as ssh_client:
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh_client.connect(hostname=secrets["ftp_hostname"], username=secrets["ftp_username"], password=secrets["ftp_password"])
+    with ssh_client.open_sftp() as ftp:
+        files = ftp.put("data", "data")
+print("done")
