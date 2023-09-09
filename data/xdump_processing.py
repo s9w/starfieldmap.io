@@ -98,7 +98,7 @@ with open(starfield_dir+"out_stars.txt", "r") as f:
         if line.startswith("EDID"):
             if "star_id" in next_star:
                 next_key = next_star["star_id"]
-                next_star["position"] = [next_star["x"], next_star["y"], next_star["z"]]
+                next_star["position"] = [-next_star["x"], -next_star["y"], next_star["z"]]
                 next_star["level"] = None
                 next_star["traits"] = None
                 for key in ["x", "y", "z", "star_id"]:
@@ -186,6 +186,23 @@ with open(starfield_dir+"out_planets.txt", "r") as f:
             new_moon["biomes"].append({"percentage": next_biome_percentage, "biome_id": next_biome_id})
             next_biome_id = None
             next_biome_percentage = None
+
+# Corrections after I don't need that silly layout anymore
+for key in list(everything.keys()):
+    value = everything[key]
+    new_key = value["name"]
+    del value["name"]
+    everything[new_key] = value
+    del everything[key]
+for star in everything.values():
+    moon_count = 0
+    planet_count = 0
+    for planet in star["planets"].values():
+        planet_count += 1
+        for moon in planet["moons"]:
+            moon_count += 1
+    star["planet_count"] = planet_count
+    star["moon_count"] = moon_count
 
 # print(json.dumps(systems, indent=2))
 
