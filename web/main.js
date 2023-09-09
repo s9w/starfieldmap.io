@@ -84,6 +84,15 @@ function set_infobox_star(star_name, star)
     attrib_list_el.appendChild(get_infobox_attrib_el("magnitude", get_fixed_trunc(star["magnitude"], 2)));
     attrib_list_el.appendChild(get_infobox_attrib_el("planets", star["planet_count"]));
     attrib_list_el.appendChild(get_infobox_attrib_el("moons", star["moon_count"]));
+    
+    let resource_list = ""
+    star["resources"].forEach(res => {
+        if(resource_list.length > 0)
+            resource_list += ", ";
+        resource_list += res;
+    });
+    attrib_list_el.appendChild(get_infobox_attrib_el("Resources", resource_list));
+
     infobox_el.appendChild(attrib_list_el);
 
     let button = get_new_elem("button", "goto_system");
