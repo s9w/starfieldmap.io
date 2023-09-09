@@ -191,7 +191,7 @@ function activate_system(star_name)
 
     planets_group.clear();
     let planet_index = 0;
-    for (const [key, planet] of Object.entries(all_data["stars"][star_name]["planets"]))
+    for (const [key, planet] of Object.entries(all_data[star_name]["planets"]))
     {
         let dist_from_sun = 10.0 * (planet_index + 1);
         let planet_pos = new THREE.Vector3(dist_from_sun * Math.cos(planet["start_angle"]), 0.0, dist_from_sun * Math.sin(planet["start_angle"]) );
@@ -215,7 +215,7 @@ function activate_system(star_name)
 
 function on_label_click(name)
 {
-    set_infobox_star(name, all_data["stars"][name]);
+    set_infobox_star(name, all_data[name]);
     document.getElementById("infobox").classList.add("active");
     last_activation_ts = Date.now();
 
@@ -234,7 +234,7 @@ function on_container_click()
 {
     if(intersection_obj !== null)
     {
-        set_infobox_star(intersection_obj.name, all_data["stars"][intersection_obj.name]);
+        set_infobox_star(intersection_obj.name, all_data[intersection_obj.name]);
         last_activation_ts = Date.now();
         document.getElementById("infobox").classList.add("active");
     }
@@ -297,7 +297,7 @@ async function get_and_process_data(scene)
     const compressed = new Uint8Array(compressedBuf);
     var string = new TextDecoder().decode(fzstd.decompress(compressed));
     all_data = JSON.parse(string);
-    for (const [key, value] of Object.entries(all_data["stars"]))
+    for (const [key, value] of Object.entries(all_data))
     {
         add_galaxy_view_star(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key);
     }
