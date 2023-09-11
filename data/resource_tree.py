@@ -1,5 +1,3 @@
-import json
-
 def get_between(line, left, right):
     left_pos = line.find(left)
     right_pos = line.rfind(right)
@@ -18,10 +16,9 @@ with open("xdump_resources.txt", "r") as f:
                 shallow_tree[next_id] = next_rarities
                 next_id = ""
                 next_rarities = []
-            next_id = get_between(line, "\"", "\"")
+            next_id = get_between(line, "\"", "\"") + " (" + get_between(line, "[", "]") + ")"
         if line.startswith("CNAM - Next Rarity"):
-            next_rarities.append(get_between(line, "\"", "\""))
-
+            next_rarities.append(get_between(line, "\"", "\"") + " (" + get_between(line, "[", "]") + ")")
 
 
 # building a proper tree
@@ -40,7 +37,7 @@ for res, next_rarities in shallow_tree.items():
         tree[res][next_rarity] = get_descendents(next_rarity)
 
 
-# removing single-node trees
+# Prune single-node trees
 for key in list(tree.keys()):
     if len(tree[key]) == 0:
         del tree[key]
@@ -48,14 +45,14 @@ for key in list(tree.keys()):
 
 # printing
 def indent_print(content, level):
-    s = ' ' * (2*level)
+    indent_amount = 2*level
+    s = ' ' * indent_amount
     s += content
     print(s)
 
-def process_tree(key, value, level=0):
-    indent_print(key, level)
-    for child_key, child_value in value.items():
-        process_tree(child_key, child_value, level+1)
+def process_tree(tree, level):
+    for child_key, child_value in tree.items():
+        indent_print(child_key, level)
+        process_tree(child_value, level+1)
 
-for key, value in tree.items():
-    process_tree(key, value)
+process_tree(tree, level=0)
