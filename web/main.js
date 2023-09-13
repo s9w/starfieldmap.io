@@ -248,7 +248,7 @@ function on_container_click()
 
 
 
-function add_galaxy_view_star(scene, position, name)
+function add_galaxy_view_star(scene, position, name, extra_classes)
 {
     const map = new THREE.TextureLoader().load( 'circle.png' );
     const material = new THREE.SpriteMaterial( { map: map, color: 0xff807d  } );
@@ -272,6 +272,10 @@ function add_galaxy_view_star(scene, position, name)
     const css2_object = new CSS2DObject( text_div_el );
     
     css2_object.center.set( 0.0, 0.5 );
+    if(extra_classes.includes("pair_top")) css2_object.center.add(new THREE.Vector2(0, 0.4));
+    if(extra_classes.includes("pair_bottom")) css2_object.center.add(new THREE.Vector2(0, -0.4));
+    if(extra_classes.includes("triple_top")) css2_object.center.add(new THREE.Vector2(0, 0.7));
+    if(extra_classes.includes("triple_bottom")) css2_object.center.add(new THREE.Vector2(0, -0.7));
     sprite.add( css2_object );
     
     sprite.position.set(position.x, position.y, position.z);
@@ -299,7 +303,7 @@ async function get_and_process_data(scene)
     all_data = JSON.parse(string);
     for (const [key, value] of Object.entries(all_data))
     {
-        add_galaxy_view_star(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key);
+        add_galaxy_view_star(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key, value["extra_classes"]);
     }
 }
 

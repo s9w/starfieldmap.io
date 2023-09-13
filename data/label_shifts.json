@@ -1,0 +1,58 @@
+{
+    "Procyon A": "pair_top",
+    "Procyon B": "pair_bottom",
+
+    "Aranae": "pair_top",
+    "Olympus": "pair_bottom",
+
+    "Bessel": "pair_top",
+    "Piazzi": "pair_bottom",
+
+    "Carinae": "pair_top",
+    "Eta Cassiopeia": "pair_bottom",
+
+    "Guniibuu": "pair_top",
+    "Indum": "pair_bottom",
+
+    "Alpha Centauri": "pair_top",
+    "Toliman": "pair_bottom",
+
+    "Oborum Prime": "pair_top",
+    "Oborum Proxima": "pair_bottom",
+
+    "Sirius": "pair_top",
+    "The Pup": "pair_bottom",
+
+    "Alpha Marae": "pair_top",
+    "Beta Marae": "pair_bottom",
+
+    "Bradbury": "pair_top",
+    "McClure": "pair_bottom",
+
+    "Ursae Majoris": "pair_top",
+    "Ursae Minoris": "pair_bottom",
+
+    "Bannoc": "pair_top",
+    "Bannoc Secondus": "pair_bottom",
+
+    "Xi Ophiuchi": "pair_top",
+    "Zeta Ophiuchi": "pair_bottom",
+
+    "Cheyenne": "pair_top",
+    "Maheo": "pair_bottom",
+
+    "Delta Vulpes": "pair_top",
+    "Gamma Vulpes": "pair_bottom",
+
+    "Alpha Andraste": "pair_top",
+    "Beta Andraste": "pair_bottom",
+
+    "Copernicus": "pair_top",
+    "Copernicus Minor": "pair_bottom",
+
+
+
+    "Alpha Ternion": "triple_top",
+    "Beta Ternion": "triple_middle",
+    "Proxima Ternion": "triple_bottom"
+}
