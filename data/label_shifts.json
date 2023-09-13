@@ -50,6 +50,8 @@
     "Copernicus": "pair_top",
     "Copernicus Minor": "pair_bottom",
 
+    "Alpha Tirna": "pair_top",
+    "Beta Tirna": "pair_bottom",
 
 
     "Alpha Ternion": "triple_top",
