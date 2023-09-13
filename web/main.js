@@ -256,6 +256,8 @@ function add_galaxy_view_star(scene, position, name, extra_classes)
     material.opacity = 0.5;
     material.sizeAttenuation = false;
     const sprite = new THREE.Sprite( material );
+    if(extra_classes.includes("pair_bottom") || extra_classes.includes("triple_bottom") || extra_classes.includes("triple_middle"))
+        sprite.visible = false;
     sprite.name = name;
     sprite.userData["type"] = "star";
     
