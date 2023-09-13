@@ -10,7 +10,7 @@ let name_to_obj = {};
 let controls;
 let star_group = new THREE.Group();
 let planets_group = new THREE.Group();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1.0, 10000 );
+const camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 1.0, 10000 );
 const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true });
 let labelRenderer = new CSS2DRenderer();
 let container = document.getElementById('glContainer');
@@ -280,7 +280,7 @@ function add_galaxy_view_star(scene, position, name, extra_classes)
     
     sprite.position.set(position.x, position.y, position.z);
     star_group.add( sprite );
-    scene.add( star_group );
+    
     name_to_obj[name] = sprite;
 }
 
@@ -301,18 +301,69 @@ async function get_and_process_data(scene)
     const compressed = new Uint8Array(compressedBuf);
     var string = new TextDecoder().decode(fzstd.decompress(compressed));
     all_data = JSON.parse(string);
+    scene.add( star_group );
     for (const [key, value] of Object.entries(all_data))
     {
-        add_galaxy_view_star(scene, new THREE.Vector3(value.position[0], value.position[1], value.position[2]), key, value["extra_classes"]);
+        add_galaxy_view_star(scene, get_vec3(value.position), key, value["extra_classes"]);
     }
+    on_input();
+}
+
+function degrees_to_radians(degrees)
+{
+  var pi = Math.PI;
+  return degrees * (pi/180);
+}
+
+function get_vec3(ary)
+{
+    return new THREE.Vector3(ary[0], ary[1], ary[2]);
+}
+
+function get_middle(vec0, vec1)
+{
+    let middle = get_vec3(vec0);
+    middle.add(get_vec3(vec1));
+    middle.multiplyScalar(0.5);
+    return middle;
+}
+
+function on_input()
+{
+    let axis = new THREE.Vector3(document.getElementById("rot_x").value, document.getElementById("rot_y").value, document.getElementById("rot_z").value);
+    let angle_deg = Number(document.getElementById("rot_angle").value);
+    // console.log("axis before norm: " + axis.x + ", " + axis.y + ", " + axis.z + ", angle_deg: " + angle_deg);
+    axis.normalize();
+    let angle = degrees_to_radians(angle_deg);
+    
+    // remove everything
+    for (const star of star_group.children) {
+        star.children = []
+    }
+    container.childNodes[0].textContent = "";
+    star_group.clear();
+    
+    // add new transformed
+    for (const [key, value] of Object.entries(all_data))
+    {
+        let pos = get_vec3(value.position);
+        pos.applyAxisAngle(axis, angle);
+        add_galaxy_view_star(scene, pos, key, value["extra_classes"]);
+    }
+
+    //re-center
+    let center = get_middle(all_data["Cheyenne"].position, all_data["Heinlein"].position).applyAxisAngle(axis, angle);
+    camera.position.set(center.x, center.y, center.z + 40);
+    controls.target = center;
+    controls.update();
+    camera.updateProjectionMatrix();
+    gridHelper.position.set(center.x, center.y, center.z);
 }
 
 function main()
 {
     scene = new THREE.Scene();
     raycaster = new THREE.Raycaster();
-    let initial_center = new THREE.Vector3(10, 10, 0);
-    camera.position.set( initial_center.x, initial_center.y+20, initial_center.z+20 );
 
     scene.add( new THREE.AmbientLight( 0xffffff, 0.2 ) );
     const sun_light = new THREE.PointLight( 0xffffff, 10, 0, 0 );
@@ -332,19 +383,16 @@ function main()
     container.appendChild( renderer.domElement ); 
 
     controls = new OrbitControls( camera, labelRenderer.domElement );
-    // controls.enableRotate = false;
     controls.zoomToCursor = false;
     controls.enableDamping = false;
     controls.zoomSpeed = 2.0;
     controls.panSpeed = 1.0;
-    controls.target = initial_center;
     controls.update();
 
     const sectors = 16;
     const rings = 8;
     const divisions = 64;
     gridHelper = new THREE.PolarGridHelper( 20, sectors, rings, divisions );
-    gridHelper.position.set(initial_center.x, initial_center.y, initial_center.z);
     scene.add( gridHelper );
 
     function animate() {
@@ -376,6 +424,10 @@ function main()
     }
     window.addEventListener( 'resize', onWindowResize, false );
     document.getElementById("home_button").addEventListener("click", click_home);
+    document.getElementById("rot_x").addEventListener("input", on_input);
+    document.getElementById("rot_y").addEventListener("input", on_input);
+    document.getElementById("rot_z").addEventListener("input", on_input);
+    document.getElementById("rot_angle").addEventListener("input", on_input);
     onWindowResize();
     animate();
 }

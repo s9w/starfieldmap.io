@@ -120,3 +120,6 @@ body{
     padding-right: 0.2em;
     color: black;
 }
+body > input{
+    display: none;
+}
