@@ -6,15 +6,16 @@ html, body{
     height: 100%;
 }
 .label {
-    color: #ffffff;
+    color: #ffffffb2;
     text-transform: uppercase;
-    margin-left: 0.4em;
     font-size: larger;
     padding-left: 0.5em;
     padding-right: 0.5em;
 }
 .label:hover, .forcedhover{
-    background-color: rgba(255, 255, 255, 0.3);
+    z-index: 99;
+    color: #ffffff;
+    background-color: rgba(200, 200, 200, 0.7);
 }
 body{
     display: flex;

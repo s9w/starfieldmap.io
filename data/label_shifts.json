@@ -53,6 +53,9 @@
     "Alpha Tirna": "pair_top",
     "Beta Tirna": "pair_bottom",
 
+    "Rivera": "pair_top",
+    "Bolivar": "pair_bottom",
+
 
     "Alpha Ternion": "triple_top",
     "Beta Ternion": "triple_middle",

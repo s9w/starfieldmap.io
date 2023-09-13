@@ -259,7 +259,7 @@ function add_galaxy_view_star(scene, position, name, extra_classes)
     sprite.name = name;
     sprite.userData["type"] = "star";
     
-    const sprite_size = 0.02;
+    const sprite_size = 0.015;
     sprite.scale.set( sprite_size, sprite_size, sprite_size );
 
     const text_div_el = document.createElement( 'div' );
