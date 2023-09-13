@@ -221,18 +221,8 @@ function on_label_mouseout(event, name)
 
 function on_container_click()
 {
-    if(intersection_obj !== null)
-    {
-        set_infobox_star(intersection_obj.name, all_data[intersection_obj.name]);
-        last_activation_ts = Date.now();
-        document.getElementById("infobox").classList.add("active");
-    }
-    else
-    {
-        if((Date.now() - last_activation_ts) > 200)
-            document.getElementById("infobox").classList.remove("active");
-
-    }
+    if((Date.now() - last_activation_ts) > 200)
+        document.getElementById("infobox").classList.remove("active");
 }
 
 
