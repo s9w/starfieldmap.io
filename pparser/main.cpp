@@ -31,8 +31,6 @@ namespace pp
       return { level, content };
    }
 
-   enum class global_mode{starting, waiting_for_record_header, waiting_for_formid};
-
    template<typename T>
    auto extract(
       const line_content& line,
@@ -47,20 +45,14 @@ namespace pp
          target.emplace();
       }
 
+      const auto value_substr = line.m_line_content.substr(start.size() + 2);
       if constexpr(is_T_or_opt_T<T, std::string>)
       {
-         target = line.m_line_content.substr(start.size() + 2);
+         target = value_substr;
       }
       else if constexpr (is_T_or_opt_T<T, float>)
       {
-         try
-         {
-            target = std::stof(line.m_line_content.substr(0, start.size() + 2));
-         }
-         catch(...)
-         {
-            std::terminate();
-         }
+         target = std::stof(value_substr);
       }
       else
       {
@@ -87,48 +79,35 @@ namespace pp
    template<fillable T>
    auto run(const std::string& filename) -> void
    {
-      global_mode mode = global_mode::starting;
+      // global_mode mode = global_mode::starting;
       std::ifstream f(filename);
       std::string line;
       int line_number = 1;
       std::map<std::string, T> map;
       std::optional<T> next_obj;
+      bool looking_for_first_formid = true;
       while (std::getline(f, line))
       {
          const line_content content = get_line_content(line);
 
-         if (content.m_level > 0 && content.m_line_content == "Record Header")
+         if (content.m_line_content.starts_with("FormID: OMOD"))
          {
-            if (mode == global_mode::waiting_for_record_header)
+            if(looking_for_first_formid == false)
             {
-               pp_assert(next_obj.has_value());
                map.emplace(next_obj.value().m_formid, next_obj.value());
-               next_obj.reset();
-            }
-            else if (mode == global_mode::starting)
-            {
-               // Don't commit empty object
             }
             else
             {
-               std::terminate();
+               looking_for_first_formid = false;
             }
-            mode = global_mode::waiting_for_formid;
-         }
-         else if (mode == global_mode::waiting_for_formid && content.m_level > 0 && content.m_line_content.starts_with("FormID: "))
-         {
-            pp_assert(next_obj.has_value() == false);
             next_obj.emplace(get_formid(content.m_line_content));
-            mode = global_mode::waiting_for_record_header;
          }
-         else if(mode == global_mode::waiting_for_record_header)
+         else if(looking_for_first_formid == false)
          {
-            pp_assert(next_obj.has_value());
             next_obj.value().process_line(content);
          }
          ++line_number;
       }
-      pp_assert(next_obj.has_value());
       map.emplace(next_obj.value().m_formid, next_obj.value());
 
       int end = 0;
