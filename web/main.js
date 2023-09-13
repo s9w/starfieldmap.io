@@ -14,7 +14,6 @@ const camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.inner
 const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true });
 let labelRenderer = new CSS2DRenderer();
 let container = document.getElementById('glContainer');
-let raycaster;
 const pointer = new THREE.Vector2(99, 99);
 let intersection_obj;
 let all_data;
@@ -105,22 +104,12 @@ function highlight_obj(obj, with_label, from_type)
     if(mode != "galaxy" && from_type == "star")
         return;
     obj.material.opacity = 1.0;
-    if(with_label)
-    {
-        let label_div = obj.children[0].element;
-        label_div.classList.add("forcedhover");
-    }
 }
 function unhighlight_obj(obj, with_label, from_type)
 {
     if(mode != "galaxy" && from_type == "star")
         return;
     obj.material.opacity = 0.5;
-    if(with_label)
-    {
-        let label_div = obj.children[0].element;
-        label_div.classList.remove("forcedhover");
-    }
 }
 
 function xy_zero_orbit_controls(orbit_controls, new_height)
@@ -365,7 +354,6 @@ function on_input()
 function main()
 {
     scene = new THREE.Scene();
-    raycaster = new THREE.Raycaster();
 
     scene.add( new THREE.AmbientLight( 0xffffff, 0.2 ) );
     const sun_light = new THREE.PointLight( 0xffffff, 10, 0, 0 );
@@ -400,26 +388,6 @@ function main()
     function animate() {
         requestAnimationFrame( animate );
         controls.update();  
-
-        raycaster.setFromCamera( pointer, camera );
-        const intersects = raycaster.intersectObjects( star_group.children, false );
-        if ( intersects.length > 0 ) {
-            if ( intersection_obj != intersects[ 0 ].object ) {
-                if ( intersection_obj )
-                {
-                    unhighlight_obj(intersection_obj, true, intersection_obj.userData.type);
-                }
-                intersection_obj = intersects[ 0 ].object;
-                highlight_obj(intersection_obj, true, intersection_obj.userData.type)
-            }
-        }
-        else {
-            if ( intersection_obj )
-            {
-                unhighlight_obj(intersection_obj, true, intersection_obj.userData.type);
-            }
-            intersection_obj = null;
-        }
 
         renderer.render( scene, camera );
         labelRenderer.render( scene, camera );
