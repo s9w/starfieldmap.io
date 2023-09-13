@@ -46,11 +46,12 @@ namespace pp
       {
          target.emplace();
       }
-      if constexpr(std::same_as<T, std::string> || (is_optional<T> && std::same_as<typename T::value_type, std::string>))
+
+      if constexpr(is_T_or_opt_T<T, std::string>)
       {
          target = line.m_line_content.substr(start.size() + 2);
       }
-      else if constexpr (std::same_as<T, float>)
+      else if constexpr (is_T_or_opt_T<T, float>)
       {
          try
          {
@@ -61,21 +62,13 @@ namespace pp
             std::terminate();
          }
       }
+      else
+      {
+         std::terminate();
+      }
    }
 
-   struct obj{
-      std::string m_formid;
-      std::optional<std::string> m_name;
-      explicit obj(const std::string& formid)
-         : m_formid(formid)
-      {
-         
-      }
-      auto process_line(const line_content& line) -> void
-      {
-         extract(line, "FULL - Name", m_name);
-      }
-   };
+   
 
    auto get_formid(const std::string& line) -> std::string
    {
@@ -84,15 +77,22 @@ namespace pp
       return line.substr(start, end - start);
    }
 
+   template<typename T>
+   concept fillable = requires(T t, const line_content& lc)
+   {
+      {t.process_line(lc)} -> std::same_as<void>;
+   };
 
-   auto run() -> void
+
+   template<fillable T>
+   auto run(const std::string& filename) -> void
    {
       global_mode mode = global_mode::starting;
-      std::ifstream f("../data/xdump_omod.txt");
+      std::ifstream f(filename);
       std::string line;
       int line_number = 1;
-      std::map<std::string, obj> map;
-      std::optional<obj> next_obj;
+      std::map<std::string, T> map;
+      std::optional<T> next_obj;
       while (std::getline(f, line))
       {
          const line_content content = get_line_content(line);
@@ -128,15 +128,30 @@ namespace pp
          }
          ++line_number;
       }
+      pp_assert(next_obj.has_value());
       map.emplace(next_obj.value().m_formid, next_obj.value());
-
 
       int end = 0;
    }
+
+
+   struct obj {
+      std::string m_formid;
+      std::optional<std::string> m_name;
+      explicit obj(const std::string& formid)
+         : m_formid(formid)
+      {
+
+      }
+      auto process_line(const line_content& line) -> void
+      {
+         extract(line, "FULL - Name", m_name);
+      }
+   };
 }
 
 
 auto main() -> int
 {
-   pp::run();
+   pp::run<pp::obj>("../data/xdump_omod.txt");
 }
