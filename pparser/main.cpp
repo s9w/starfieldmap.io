@@ -5,6 +5,7 @@
 #include <map>
 #include <variant>
 #include <vector>
+#include <regex>
 
 #include "fundamentals.h"
 
@@ -23,31 +24,32 @@ namespace pp
    struct line_content{
       int m_level;
       std::string m_line_content;
+      int m_line_number;
    };
 
-   auto get_line_content(std::string&& line) -> line_content
+   auto get_line_content(std::string&& line, const int line_number) -> line_content
    {
       const auto level = get_indentation_level(line);
       std::string content = std::move(line);
       content.erase(0, level * 2);
-      return { level, std::move(content) };
+      return { level, std::move(content), line_number };
    }
 
    template<typename T>
    auto extract(
-      const line_content& line,
+      const std::string& line,
       const std::string_view start,
       T& target
    ) -> bool
    {
-      if (line.m_line_content.starts_with(start) == false)
+      if (line.starts_with(start) == false)
          return false;
       if constexpr(is_optional<T>)
       {
          target.emplace();
       }
 
-      const auto value_substr = line.m_line_content.substr(start.size() + 2);
+      const auto value_substr = line.substr(start.size() + 2);
       if constexpr(is_T_or_opt_T<T, std::string>)
       {
          target = value_substr;
@@ -90,7 +92,7 @@ namespace pp
       bool looking_for_first_formid = true;
       while (std::getline(f, line))
       {
-         const line_content content = get_line_content(std::move(line));
+         const line_content content = get_line_content(std::move(line), line_number);
 
          if (content.m_line_content.starts_with("FormID: OMOD"))
          {
@@ -115,14 +117,15 @@ namespace pp
       int end = 0;
    }
 
+   enum class prop_function_type{not_set, mul_add, add, set, rem};
 
-   struct mul_add_prop{
+   struct property {
+      prop_function_type m_function_type = prop_function_type::not_set;
+      std::string m_property_name;
       float m_mult;
       float m_add;
       float m_step;
    };
-
-   using property = std::variant<mul_add_prop>;
 
    struct obj {
       std::string m_formid;
@@ -130,20 +133,82 @@ namespace pp
       std::vector<property> m_properties;
 
       std::optional<int> m_in_property_level;
-      std::optional<property> m_next_property;
+      std::vector<std::string> m_next_property_strings;
 
       explicit obj(const std::string& formid)
          : m_formid(formid)
       {
+         m_next_property_strings.reserve(6);
+      }
+      auto build_property() -> void
+      {
+         const std::regex pattern("Value (\\d) - (.+?): (.+)");
+         std::string property_name;
+         float value1{};
+         float value2{};
+         prop_function_type fun_type = prop_function_type::not_set;
+         float step{};
+         for(const auto& line : m_next_property_strings)
+         {
+            std::string fun_type_str;
+            extract(line, "Function Type", fun_type_str);
+            if(fun_type_str.empty() == false)
+            {
+               if (fun_type_str == "SET") fun_type = prop_function_type::set;
+               if (fun_type_str == "ADD") fun_type = prop_function_type::add;
+               if (fun_type_str == "MUL+ADD") fun_type = prop_function_type::mul_add;
+               if (fun_type_str == "REM") fun_type = prop_function_type::rem;
+            }
+            extract(line, "Property Name", property_name);
+            extract(line, "Step", step);
+
+
+            std::smatch match;
+            if(line.starts_with("Value ") && std::regex_match(line, match, pattern))
+            {
+               if(match[2] == "FormID")
+               {
+                  m_next_property_strings.clear();
+                  return;
+               }
+               float value{};
+               if(match[2] == "Float")
+                  value = std::stof(match[3]);
+               else if (match[2] == "Int")
+                  value = static_cast<float>(std::stoi(match[3]));
+
+               if(match[1] == "1")
+                  value1 = value;
+               else if (match[1] == "2")
+                  value2 = value;
+            }
+         }
+         if (fun_type == prop_function_type::not_set)
+            std::terminate();
+         m_next_property_strings.clear();
+         m_properties.emplace_back(
+            property{
+               .m_function_type = fun_type,
+               .m_property_name = property_name,
+               .m_mult = value1,
+               .m_add = value2,
+               .m_step = step
+            }
+         );
 
       }
       auto process_line(const line_content& line) -> void
       {
-         extract(line, "FULL - Name", m_name);
+
+         extract(line.m_line_content, "FULL - Name", m_name);
 
          // start property
          if (line.m_line_content.starts_with("Property #"))
          {
+            if(m_next_property_strings.empty() == false)
+            {
+               this->build_property();
+            }
             m_in_property_level.emplace(line.m_level);
          }
 
@@ -152,29 +217,11 @@ namespace pp
          {
             if(line.m_level <= m_in_property_level.value())
             {
-               // end of this property
-               if (m_next_property.has_value())
-               {
-                  m_properties.push_back(m_next_property.value());
-                  m_next_property.reset();
-               }
+               // end of this property because property list ends
+               this->build_property();
                m_in_property_level.reset();
             }
-            std::string function_type;
-            extract(line, "Function Type", function_type);
-            if(function_type == "MUL+ADD")
-            {
-               m_next_property.emplace(mul_add_prop{});
-            }
-            if(m_next_property.has_value())
-            {
-               if(std::holds_alternative<mul_add_prop>(m_next_property.value()))
-               {
-                  extract(line, "Value 1 - Float", std::get<mul_add_prop>(m_next_property.value()).m_mult);
-                  extract(line, "Value 2 - Float", std::get<mul_add_prop>(m_next_property.value()).m_add);
-                  extract(line, "Step", std::get<mul_add_prop>(m_next_property.value()).m_step);
-               }
-            }
+            m_next_property_strings.push_back(line.m_line_content);
          }
          
             
