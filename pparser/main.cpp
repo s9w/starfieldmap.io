@@ -89,9 +89,10 @@ namespace pp
          extract(line.m_line_content, "FULL - Name", m_name);
 
          std::string m_parent_location{};
-         extract(line.m_line_content, "PNAM - Parent Location", m_parent_location);
-         if (m_parent_location.empty() == false && m_parent_location == "LCTN - Location [0001A53A] <Universe> \"Universe\"")
+         if (extract(line.m_line_content, "PNAM - Parent Location", m_parent_location) && get_formid(m_parent_location) == 0x0001a53a)
+         {
             m_reject = false;
+         }
       }
 
       [[nodiscard]] auto reject() const -> bool
@@ -164,11 +165,11 @@ namespace pp
 
          const auto biome_generator = [](const std::vector<std::string>& lines) -> std::optional<planet_biome> {
             planet_biome biome;
-            for (const auto& line : lines)
+            for (const auto& l : lines)
             {
-               extract(line, "Percentage", biome.m_percentage);
-               extract(line, "Biome reference", biome.m_biome_ref);
-               extract(line, "Resource gen override", biome.m_resource_gen_override);
+               extract(l, "Percentage", biome.m_percentage);
+               extract(l, "Biome reference", biome.m_biome_ref);
+               extract(l, "Resource gen override", biome.m_resource_gen_override);
             }
             return biome;
          };
@@ -204,9 +205,6 @@ namespace pp
       std::vector<property> m_properties;
       list_item_detector m_property_builder;
 
-      // std::optional<int> m_in_property_level;
-      // std::vector<std::string> m_next_property_strings;
-
       explicit omod(const uint32_t formid)
          : m_formid(formid)
          , m_property_builder("Property #")
@@ -230,8 +228,7 @@ namespace pp
          for(const auto& line : lines)
          {
             std::string fun_type_str;
-            extract(line, "Function Type", fun_type_str);
-            if(fun_type_str.empty() == false)
+            if(extract(line, "Function Type", fun_type_str))
             {
                if (fun_type_str == "SET") fun_type = prop_function_type::set;
                if (fun_type_str == "ADD") fun_type = prop_function_type::add;
