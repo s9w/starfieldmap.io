@@ -5,10 +5,12 @@
 #include <map>
 #include <variant>
 #include <vector>
-#include <regex>
+#include <chrono>
 
 #include "fundamentals.h"
 #include "tools.h"
+
+#include "ctre.hpp"
 
 
 namespace pp
@@ -190,7 +192,8 @@ namespace pp
 
       auto build_property() -> void
       {
-         const std::regex pattern("Value (\\d) - (.+?): (.+)");
+         static constexpr auto pattern = ctll::fixed_string{ "Value (\\d) - (.+?): (.+)" };
+         // const std::regex pattern("Value (\\d) - (.+?): (.+)");
          std::string property_name;
          float value1{};
          float value2{};
@@ -211,23 +214,25 @@ namespace pp
             extract(line, "Step", step);
 
 
-            std::smatch match;
-            if(line.starts_with("Value ") && std::regex_match(line, match, pattern))
+            // std::smatch match;
+            // ctre::match<pattern>(sv)
+            const auto match = ctre::match<pattern>(line);
+            if(line.starts_with("Value ") && match)
             {
-               if(match[2] == "FormID")
+               if(match.get<2>().to_view() == "FormID")
                {
                   m_next_property_strings.clear();
                   return;
                }
                float value{};
-               if(match[2] == "Float")
-                  value = std::stof(match[3]);
-               else if (match[2] == "Int")
-                  value = static_cast<float>(std::stoi(match[3]));
+               if(match.get<2>().to_view() == "Float")
+                  value = std::stof(match.get<3>().to_string());
+               else if (match.get<2>().to_view() == "Int")
+                  value = static_cast<float>(std::stoi(match.get<3>().to_string()));
 
-               if(match[1] == "1")
+               if(match.get<1>().to_view() == "1")
                   value1 = value;
-               else if (match[1] == "2")
+               else if (match.get<1>().to_view() == "2")
                   value2 = value;
             }
          }
@@ -279,8 +284,12 @@ namespace pp
 
 auto main() -> int
 {
+   const auto t0 = std::chrono::steady_clock::now();
    const auto locations = pp::run<pp::lctn>("../data/xdump_lctn.txt", "LCTN");
    const auto omods = pp::run<pp::omod>("../data/xdump_omod.txt", "OMOD");
+   const auto t1 = std::chrono::steady_clock::now();
+   const auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+   std::cout << "ms: " << dt << "\n";
 
    int end = 0;
 }
