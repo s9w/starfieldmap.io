@@ -18,7 +18,7 @@ namespace pp
    };
 
    auto get_line_content(std::string&& line, const int line_number) -> line_content;
-
+   auto get_formid(const std::string& line) -> uint32_t;
 
    template<typename T>
    auto extract(
@@ -47,6 +47,10 @@ namespace pp
       {
          target = std::stoi(value_substr);
       }
+      else if constexpr (is_T_or_opt_T<T, uint32_t>)
+      {
+         target = get_formid(value_substr);
+      }
       else
       {
          std::terminate();
@@ -55,7 +59,7 @@ namespace pp
    }
 
 
-   auto get_formid(const std::string& line) -> uint32_t;
+   
 
    auto from_little(std::string_view str) -> uint32_t;
    auto from_big(std::string_view str) -> uint32_t;

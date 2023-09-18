@@ -125,10 +125,18 @@ namespace pp
       }
    };
 
+   struct planet_biome{
+      float m_percentage{};
+      uint32_t m_biome_ref{};
+      uint32_t m_resource_gen_override{};
+   };
+
    enum class body_type{unset, planet, moon};
    struct planet {
       uint32_t m_formid{};
       bool m_reject = true;
+      std::optional<int> m_in_property_level;
+      std::vector<std::string> m_next_property_strings;
 
       std::string m_name;
       float m_temperature{};
@@ -136,10 +144,24 @@ namespace pp
       int m_planet_id{};
       int m_primary_planet_id{};
       body_type m_body_type = body_type::unset;
+      std::vector<planet_biome> m_biome_refs;
 
       explicit planet(const uint32_t formid)
          : m_formid(formid)
       {
+
+      }
+
+      auto build_property() -> void
+      {
+         planet_biome biome;
+         for(const auto& line : m_next_property_strings)
+         {
+            extract(line, "Percentage", biome.m_percentage);
+            extract(line, "Biome reference", biome.m_biome_ref);
+            extract(line, "Resource gen override", biome.m_resource_gen_override);
+         }
+         m_biome_refs.push_back(biome);
       }
       auto process_line(const line_content& line) -> void
       {
@@ -148,6 +170,28 @@ namespace pp
          extract(line.m_line_content, "Star ID", m_star_id);
          extract(line.m_line_content, "Planet ID", m_planet_id);
          extract(line.m_line_content, "Primary planet ID", m_primary_planet_id);
+
+         // start property
+         if (line.m_line_content.starts_with("PPBD - Biome #"))
+         {
+            if (m_next_property_strings.empty() == false)
+            {
+               this->build_property();
+            }
+            m_in_property_level.emplace(line.m_level);
+         }
+
+         // prop is active
+         else if (m_in_property_level.has_value())
+         {
+            if (line.m_level <= m_in_property_level.value())
+            {
+               // end of this property because property list ends
+               this->build_property();
+               m_in_property_level.reset();
+            }
+            m_next_property_strings.push_back(line.m_line_content);
+         }
 
          std::string body_type_str;
          if(extract(line.m_line_content, "CNAM - Body type", body_type_str))
