@@ -83,12 +83,12 @@ namespace pp
       explicit lctn(const uint32_t formid)
          : m_formid(formid)
       {
-         int start = 0;
+
       }
       auto process_line(const line_content& line) -> void
       {
-         // if (m_reject)
-         //    return;
+         if (m_reject)
+            return;
          extract(line.m_line_content, "System level", m_system_level);
          extract(line.m_line_content, "FULL - Name", m_name);
 
@@ -101,6 +101,31 @@ namespace pp
       [[nodiscard]] auto reject() const -> bool
       {
          return m_reject;
+      }
+   };
+
+   struct star {
+      uint32_t m_formid;
+      std::string m_name;
+      float m_x{};
+      float m_y{};
+      float m_z{};
+
+      explicit star(const uint32_t formid)
+         : m_formid(formid)
+      {
+      }
+      auto process_line(const line_content& line) -> void
+      {
+         extract(line.m_line_content, "FULL - Name", m_name);
+         extract(line.m_line_content, "x", m_x);
+         extract(line.m_line_content, "y", m_y);
+         extract(line.m_line_content, "z", m_z);
+      }
+
+      [[nodiscard]] auto reject() const -> bool
+      {
+         return false;
       }
    };
 
@@ -218,8 +243,9 @@ auto main() -> int
 {
    const auto t0 = std::chrono::steady_clock::now();
 
-   const auto locations = pp::run<pp::lctn>("../data/xdump_lctn.txt", "LCTN");
+   const auto star_locations = pp::run<pp::lctn>("../data/xdump_lctn.txt", "LCTN");
    const auto omods = pp::run<pp::omod>("../data/xdump_omod.txt", "OMOD");
+   const auto stars = pp::run<pp::star>("../data/xdump_stars.txt", "STDT");
 
    const auto t1 = std::chrono::steady_clock::now();
    const auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
