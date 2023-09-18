@@ -60,6 +60,7 @@ namespace pp
          map.emplace(next_obj.value().m_formid, next_obj.value());
    }
 
+
    enum class prop_function_type{not_set, mul_add, add, set, rem};
 
    struct property {
@@ -121,6 +122,53 @@ namespace pp
       [[nodiscard]] auto reject() const -> bool
       {
          return false;
+      }
+   };
+
+   enum class body_type{unset, planet, moon};
+   struct planet {
+      uint32_t m_formid{};
+      bool m_reject = true;
+
+      std::string m_name;
+      float m_temperature{};
+      int m_star_id{};
+      int m_planet_id{};
+      int m_primary_planet_id{};
+      body_type m_body_type = body_type::unset;
+
+      explicit planet(const uint32_t formid)
+         : m_formid(formid)
+      {
+      }
+      auto process_line(const line_content& line) -> void
+      {
+         extract(line.m_line_content, "FULL - Name", m_name);
+         extract(line.m_line_content, "TEMP - Temperature in C", m_temperature);
+         extract(line.m_line_content, "Star ID", m_star_id);
+         extract(line.m_line_content, "Planet ID", m_planet_id);
+         extract(line.m_line_content, "Primary planet ID", m_primary_planet_id);
+
+         std::string body_type_str;
+         if(extract(line.m_line_content, "CNAM - Body type", body_type_str))
+         {
+            if (body_type_str == "Moon")
+            {
+               m_body_type = body_type::moon;
+               m_reject = false;
+            }
+            else if (body_type_str == "Planet")
+            {
+               m_body_type = body_type::planet;
+               m_reject = false;
+            }
+         }
+
+      }
+
+      [[nodiscard]] auto reject() const -> bool
+      {
+         return m_reject;
       }
    };
 
@@ -241,11 +289,13 @@ auto main() -> int
    std::map<uint32_t, pp::lctn> star_locations;
    std::map<uint32_t, pp::omod> omods;
    std::map<uint32_t, pp::star> stars;
+   std::map<uint32_t, pp::planet> planets;
    std::vector<std::jthread> threads;
    threads.reserve(10);
    threads.emplace_back(pp::run<pp::lctn>, "../data/xdump_lctn.txt", "LCTN", std::ref(star_locations));
    threads.emplace_back(pp::run<pp::omod>, "../data/xdump_omod.txt", "OMOD", std::ref(omods));
    threads.emplace_back(pp::run<pp::star>, "../data/xdump_stars.txt", "STDT", std::ref(stars));
+   threads.emplace_back(pp::run<pp::planet>, "../data/xdump_planets.txt", "PNDT", std::ref(planets));
    for (auto& thread : threads)
       thread.join();
    threads.clear();
