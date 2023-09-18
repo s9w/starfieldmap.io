@@ -58,6 +58,10 @@ namespace pp
       {
          target = std::stof(value_substr);
       }
+      else if constexpr (is_T_or_opt_T<T, int>)
+      {
+         target = std::stoi(value_substr);
+      }
       else
       {
          std::terminate();
@@ -82,7 +86,7 @@ namespace pp
 
 
    template<fillable T>
-   auto run(const std::string& filename) -> void
+   auto run(const std::string& filename, const std::string_view name) -> std::map<std::string, T>
    {
       std::ifstream f(filename);
       std::string line;
@@ -90,15 +94,17 @@ namespace pp
       std::map<std::string, T> map;
       std::optional<T> next_obj;
       bool looking_for_first_formid = true;
+      const std::string name_starter = std::format("FormID: {}", name);
       while (std::getline(f, line))
       {
          const line_content content = get_line_content(std::move(line), line_number);
 
-         if (content.m_line_content.starts_with("FormID: OMOD"))
+         if (content.m_line_content.starts_with(name_starter))
          {
             if(looking_for_first_formid == false)
             {
-               map.emplace(next_obj.value().m_formid, next_obj.value());
+               if(next_obj.value().reject() == false)
+                  map.emplace(next_obj.value().m_formid, next_obj.value());
             }
             else
             {
@@ -112,9 +118,10 @@ namespace pp
          }
          ++line_number;
       }
-      map.emplace(next_obj.value().m_formid, next_obj.value());
+      if (next_obj.value().reject() == false)
+         map.emplace(next_obj.value().m_formid, next_obj.value());
 
-      int end = 0;
+      return map;
    }
 
    enum class prop_function_type{not_set, mul_add, add, set, rem};
@@ -127,7 +134,39 @@ namespace pp
       float m_step;
    };
 
-   struct obj {
+
+   struct lctn {
+      std::string m_formid;
+      int m_system_level{};
+      std::string m_name;
+      bool m_reject = true;
+
+      explicit lctn(const std::string& formid)
+         : m_formid(formid)
+      {
+         int start = 0;
+      }
+      auto process_line(const line_content& line) -> void
+      {
+         // if (m_reject)
+         //    return;
+         extract(line.m_line_content, "System level", m_system_level);
+         extract(line.m_line_content, "FULL - Name", m_name);
+
+         std::string m_parent_location{};
+         extract(line.m_line_content, "PNAM - Parent Location", m_parent_location);
+         if (m_parent_location.empty() == false && m_parent_location == "LCTN - Location [0001A53A] <Universe> \"Universe\"")
+            m_reject = false;
+      }
+
+      [[nodiscard]] auto reject() const -> bool
+      {
+         return m_reject;
+      }
+   };
+
+
+   struct omod {
       std::string m_formid;
       std::optional<std::string> m_name;
       std::vector<property> m_properties;
@@ -135,10 +174,16 @@ namespace pp
       std::optional<int> m_in_property_level;
       std::vector<std::string> m_next_property_strings;
 
-      explicit obj(const std::string& formid)
+      explicit omod(const std::string& formid)
          : m_formid(formid)
       {
          m_next_property_strings.reserve(6);
+      }
+
+
+      [[nodiscard]] auto reject() const -> bool
+      {
+         return false;
       }
       auto build_property() -> void
       {
@@ -199,7 +244,6 @@ namespace pp
       }
       auto process_line(const line_content& line) -> void
       {
-
          extract(line.m_line_content, "FULL - Name", m_name);
 
          // start property
@@ -232,6 +276,9 @@ namespace pp
 
 auto main() -> int
 {
-   pp::run<pp::obj>("../data/xdump_omod.txt");
+   const auto locations = pp::run<pp::lctn>("../data/xdump_lctn.txt", "LCTN");
+   const auto omods = pp::run<pp::omod>("../data/xdump_omod.txt", "OMOD");
+
+   int end = 0;
 }
 

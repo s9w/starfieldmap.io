@@ -20,6 +20,7 @@ let all_data;
 let mode = "galaxy";
 let last_activation_ts;
 let gridHelper;
+let map_center;
 
 function click_home()
 {
@@ -204,6 +205,7 @@ function activate_system(star_name)
 
 function on_label_click(name)
 {
+    set_center(all_data[name]["transformed_pos_vec"], false, false);
     set_infobox_star(name, all_data[name]);
     document.getElementById("infobox").classList.add("active");
     last_activation_ts = Date.now();
@@ -309,6 +311,47 @@ function get_middle(vec0, vec1)
     return middle;
 }
 
+// really, js? really?
+function get_v3_copy(vec3)
+{
+    let result = new THREE.Vector3();
+    result.copy(vec3);
+    return result;
+}
+
+function set_center(center, with_cam_offset, with_grid_recenter)
+{
+    if(with_cam_offset)
+    {
+        // TODO rewrite this DRY
+        let new_cam_pos = get_v3_copy(center);
+        new_cam_pos.add(new THREE.Vector3(0, 0, 40));
+        camera.position.set(new_cam_pos.x, new_cam_pos.y, new_cam_pos.z);
+        camera.updateProjectionMatrix();
+        controls.target = get_v3_copy(center);
+        controls.update();
+
+        if(with_grid_recenter)
+            gridHelper.position.set(center.x, center.y, center.z);
+        return;
+    }
+
+    let target_to_cam = get_v3_copy(camera.position);
+    target_to_cam.sub(controls.target);
+
+    let new_cam_pos = get_v3_copy(controls.target);
+    new_cam_pos.add(target_to_cam);
+
+    camera.position.set(new_cam_pos.x, new_cam_pos.y, new_cam_pos.z);
+    camera.updateProjectionMatrix();
+    controls.target = center;
+    controls.update();
+    
+
+    if(with_grid_recenter)
+        gridHelper.position.set(center.x, center.y, center.z);
+}
+
 function on_input()
 {
     let axis = new THREE.Vector3(document.getElementById("rot_x").value, document.getElementById("rot_y").value, document.getElementById("rot_z").value);
@@ -329,16 +372,14 @@ function on_input()
     {
         let pos = get_vec3(value.position);
         pos.applyAxisAngle(axis, angle);
+        value["transformed_pos_vec"] = pos;
         add_galaxy_view_star(scene, pos, key, value["extra_classes"]);
     }
 
     //re-center
-    let center = get_middle(all_data["Cheyenne"].position, all_data["Heinlein"].position).applyAxisAngle(axis, angle);
-    camera.position.set(center.x, center.y, center.z + 40);
-    controls.target = center;
-    controls.update();
-    camera.updateProjectionMatrix();
-    gridHelper.position.set(center.x, center.y, center.z);
+    map_center = get_middle(all_data["Cheyenne"].position, all_data["Heinlein"].position).applyAxisAngle(axis, angle);
+    let has_no_cam_pos_yet = camera.position.x == 0.0 && camera.position.y == 0.0 && camera.position.z == 0.0;
+    set_center(map_center, has_no_cam_pos_yet, true);
 }
 
 function main()
