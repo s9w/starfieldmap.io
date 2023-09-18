@@ -124,6 +124,7 @@ namespace pp
          return false;
       }
    };
+   
 
    struct planet_biome{
       float m_percentage{};
@@ -135,8 +136,7 @@ namespace pp
    struct planet {
       uint32_t m_formid{};
       bool m_reject = true;
-      std::optional<int> m_in_property_level;
-      std::vector<std::string> m_next_property_strings;
+      list_item_detector m_list_item_detector;
 
       std::string m_name;
       float m_temperature{};
@@ -148,21 +148,12 @@ namespace pp
 
       explicit planet(const uint32_t formid)
          : m_formid(formid)
+         , m_list_item_detector("PPBD - Biome #")
       {
 
       }
 
-      auto build_property() -> void
-      {
-         planet_biome biome;
-         for(const auto& line : m_next_property_strings)
-         {
-            extract(line, "Percentage", biome.m_percentage);
-            extract(line, "Biome reference", biome.m_biome_ref);
-            extract(line, "Resource gen override", biome.m_resource_gen_override);
-         }
-         m_biome_refs.push_back(biome);
-      }
+
       auto process_line(const line_content& line) -> void
       {
          extract(line.m_line_content, "FULL - Name", m_name);
@@ -171,27 +162,17 @@ namespace pp
          extract(line.m_line_content, "Planet ID", m_planet_id);
          extract(line.m_line_content, "Primary planet ID", m_primary_planet_id);
 
-         // start property
-         if (line.m_line_content.starts_with("PPBD - Biome #"))
-         {
-            if (m_next_property_strings.empty() == false)
+         const auto biome_generator = [](const std::vector<std::string>& lines) -> std::optional<planet_biome> {
+            planet_biome biome;
+            for (const auto& line : lines)
             {
-               this->build_property();
+               extract(line, "Percentage", biome.m_percentage);
+               extract(line, "Biome reference", biome.m_biome_ref);
+               extract(line, "Resource gen override", biome.m_resource_gen_override);
             }
-            m_in_property_level.emplace(line.m_level);
-         }
-
-         // prop is active
-         else if (m_in_property_level.has_value())
-         {
-            if (line.m_level <= m_in_property_level.value())
-            {
-               // end of this property because property list ends
-               this->build_property();
-               m_in_property_level.reset();
-            }
-            m_next_property_strings.push_back(line.m_line_content);
-         }
+            return biome;
+         };
+         m_list_item_detector.process_line(line, m_biome_refs, biome_generator);
 
          std::string body_type_str;
          if(extract(line.m_line_content, "CNAM - Body type", body_type_str))
@@ -221,14 +202,15 @@ namespace pp
       uint32_t m_formid;
       std::optional<std::string> m_name;
       std::vector<property> m_properties;
+      list_item_detector m_property_builder;
 
-      std::optional<int> m_in_property_level;
-      std::vector<std::string> m_next_property_strings;
+      // std::optional<int> m_in_property_level;
+      // std::vector<std::string> m_next_property_strings;
 
       explicit omod(const uint32_t formid)
          : m_formid(formid)
+         , m_property_builder("Property #")
       {
-         m_next_property_strings.reserve(6);
       }
 
 
@@ -237,7 +219,7 @@ namespace pp
          return false;
       }
 
-      auto build_property() -> void
+      static auto build_property(const std::vector<std::string>& lines) -> std::optional<property>
       {
          const std::regex pattern("Value (\\d) - (.+?): (.+)");
          std::string property_name;
@@ -245,7 +227,7 @@ namespace pp
          float value2{};
          prop_function_type fun_type = prop_function_type::not_set;
          float step{};
-         for(const auto& line : m_next_property_strings)
+         for(const auto& line : lines)
          {
             std::string fun_type_str;
             extract(line, "Function Type", fun_type_str);
@@ -265,8 +247,7 @@ namespace pp
             {
                if(match[2] == "FormID")
                {
-                  m_next_property_strings.clear();
-                  return;
+                  return std::nullopt;
                }
                float value{};
                if(match[2] == "Float")
@@ -282,8 +263,7 @@ namespace pp
          }
          if (fun_type == prop_function_type::not_set)
             std::terminate();
-         m_next_property_strings.clear();
-         m_properties.emplace_back(
+         return(
             property{
                .m_function_type = fun_type,
                .m_property_name = property_name,
@@ -298,29 +278,7 @@ namespace pp
       {
          extract(line.m_line_content, "FULL - Name", m_name);
 
-         // start property
-         if (line.m_line_content.starts_with("Property #"))
-         {
-            if(m_next_property_strings.empty() == false)
-            {
-               this->build_property();
-            }
-            m_in_property_level.emplace(line.m_level);
-         }
-
-         // prop is active
-         else if (m_in_property_level.has_value())
-         {
-            if(line.m_level <= m_in_property_level.value())
-            {
-               // end of this property because property list ends
-               this->build_property();
-               m_in_property_level.reset();
-            }
-            m_next_property_strings.push_back(line.m_line_content);
-         }
-         
-            
+         m_property_builder.process_line(line, m_properties, omod::build_property);
       }
    };
 }
@@ -328,6 +286,7 @@ namespace pp
 
 auto main() -> int
 {
+   using namespace pp;
    const auto t0 = std::chrono::steady_clock::now();
 
    std::map<uint32_t, pp::lctn> star_locations;

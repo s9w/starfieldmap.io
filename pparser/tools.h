@@ -2,6 +2,7 @@
 
 #include <string_view>
 #include <string>
+#include <vector>
 
 #include "fundamentals.h"
 
@@ -58,7 +59,49 @@ namespace pp
       return true;
    }
 
+   struct list_item_detector {
+      std::optional<int> m_in_property_level;
+      std::vector<std::string> m_next_property_strings;
+      std::string m_start_str;
 
+      explicit list_item_detector(const std::string start_str)
+         : m_start_str(start_str)
+      {
+         m_next_property_strings.reserve(10);
+      }
+      template<typename T>
+      auto process_line(const line_content& line, std::vector<T>& target, const auto& m_lambda) -> void
+      {
+         if (line.m_line_content.starts_with(m_start_str))
+         {
+            if (m_next_property_strings.empty() == false)
+            {
+               const auto result = m_lambda(m_next_property_strings);
+               if(result.has_value())
+                  target.emplace_back(*result);
+
+               m_next_property_strings.clear();
+            }
+            m_in_property_level.emplace(line.m_level);
+         }
+
+         // prop is active
+         else if (m_in_property_level.has_value())
+         {
+            if (line.m_level <= m_in_property_level.value())
+            {
+               // end of this property because property list ends
+               const auto result = m_lambda(m_next_property_strings);
+               if (result.has_value())
+                  target.emplace_back(*result);
+
+               m_in_property_level.reset();
+               m_next_property_strings.clear();
+            }
+            m_next_property_strings.push_back(line.m_line_content);
+         }
+      }
+   };
    
 
    auto from_little(std::string_view str) -> uint32_t;
