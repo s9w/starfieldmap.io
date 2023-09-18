@@ -25,18 +25,18 @@ namespace pp
       std::string m_line_content;
    };
 
-   auto get_line_content(const std::string& line) -> line_content
+   auto get_line_content(std::string&& line) -> line_content
    {
       const auto level = get_indentation_level(line);
-      std::string content = line;
+      std::string content = std::move(line);
       content.erase(0, level * 2);
-      return { level, content };
+      return { level, std::move(content) };
    }
 
    template<typename T>
    auto extract(
       const line_content& line,
-      const std::string& start,
+      const std::string_view start,
       T& target
    ) -> bool
    {
@@ -90,7 +90,7 @@ namespace pp
       bool looking_for_first_formid = true;
       while (std::getline(f, line))
       {
-         const line_content content = get_line_content(line);
+         const line_content content = get_line_content(std::move(line));
 
          if (content.m_line_content.starts_with("FormID: OMOD"))
          {
