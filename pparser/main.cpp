@@ -15,71 +15,7 @@
 namespace pp
 {
 
-   auto get_indentation_level(const std::string& line) -> int
-   {
-      int i = 0;
-      while (line[i] == ' ')
-         ++i;
-      return i/2;
-   }
-
-   struct line_content{
-      int m_level;
-      std::string m_line_content;
-      int m_line_number;
-   };
-
-   auto get_line_content(std::string&& line, const int line_number) -> line_content
-   {
-      const auto level = get_indentation_level(line);
-      std::string content = std::move(line);
-      content.erase(0, level * 2);
-      return { level, std::move(content), line_number };
-   }
-
-   template<typename T>
-   auto extract(
-      const std::string& line,
-      const std::string_view start,
-      T& target
-   ) -> bool
-   {
-      if (line.starts_with(start) == false)
-         return false;
-      if constexpr(is_optional<T>)
-      {
-         target.emplace();
-      }
-
-      const auto value_substr = line.substr(start.size() + 2);
-      if constexpr(is_T_or_opt_T<T, std::string>)
-      {
-         target = value_substr;
-      }
-      else if constexpr (is_T_or_opt_T<T, float>)
-      {
-         target = std::stof(value_substr);
-      }
-      else if constexpr (is_T_or_opt_T<T, int>)
-      {
-         target = std::stoi(value_substr);
-      }
-      else
-      {
-         std::terminate();
-      }
-      return true;
-   }
-
    
-
-   auto get_formid(const std::string& line) -> uint32_t
-   {
-      const auto start = line.find('[')+1;
-      const auto end = line.find(']');
-      std::string_view sv(line);
-      return from_big(sv.substr(start, end - start));
-   }
 
    template<typename T>
    concept fillable = requires(T t, const line_content& lc)
@@ -281,8 +217,10 @@ namespace pp
 auto main() -> int
 {
    const auto t0 = std::chrono::steady_clock::now();
+
    const auto locations = pp::run<pp::lctn>("../data/xdump_lctn.txt", "LCTN");
    const auto omods = pp::run<pp::omod>("../data/xdump_omod.txt", "OMOD");
+
    const auto t1 = std::chrono::steady_clock::now();
    const auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
    std::cout << "ms: " << dt << "\n";

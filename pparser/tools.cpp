@@ -5,6 +5,33 @@
 #include <string>
 
 
+auto pp::get_indentation_level(const std::string& line) -> int
+{
+   int i = 0;
+   while (line[i] == ' ')
+      ++i;
+   return i / 2;
+}
+
+
+auto pp::get_line_content(std::string&& line, const int line_number) -> line_content
+{
+   const auto level = get_indentation_level(line);
+   std::string content = std::move(line);
+   content.erase(0, level * 2);
+   return { level, std::move(content), line_number };
+}
+
+
+auto pp::get_formid(const std::string& line) -> uint32_t
+{
+   const auto start = line.find('[') + 1;
+   const auto end = line.find(']');
+   std::string_view sv(line);
+   return from_big(sv.substr(start, end - start));
+}
+
+
 auto pp::from_little(std::string_view str) -> uint32_t
 {
    if (str.starts_with("0x"))
