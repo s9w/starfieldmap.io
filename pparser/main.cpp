@@ -25,12 +25,11 @@ namespace pp
 
 
    template<fillable T>
-   auto run(const std::string& filename, const std::string_view name) -> std::map<uint32_t, T>
+   auto run(const std::string& filename, const std::string_view name, std::map<uint32_t, T>& map) -> void
    {
       std::ifstream f(filename);
       std::string line;
       int line_number = 1;
-      std::map<uint32_t, T> map;
       std::optional<T> next_obj;
       bool looking_for_first_formid = true;
       const std::string name_starter = std::format("FormID: {}", name);
@@ -59,8 +58,6 @@ namespace pp
       }
       if (next_obj.value().reject() == false)
          map.emplace(next_obj.value().m_formid, next_obj.value());
-
-      return map;
    }
 
    enum class prop_function_type{not_set, mul_add, add, set, rem};
@@ -87,8 +84,6 @@ namespace pp
       }
       auto process_line(const line_content& line) -> void
       {
-         if (m_reject)
-            return;
          extract(line.m_line_content, "System level", m_system_level);
          extract(line.m_line_content, "FULL - Name", m_name);
 
@@ -243,9 +238,17 @@ auto main() -> int
 {
    const auto t0 = std::chrono::steady_clock::now();
 
-   const auto star_locations = pp::run<pp::lctn>("../data/xdump_lctn.txt", "LCTN");
-   const auto omods = pp::run<pp::omod>("../data/xdump_omod.txt", "OMOD");
-   const auto stars = pp::run<pp::star>("../data/xdump_stars.txt", "STDT");
+   std::map<uint32_t, pp::lctn> star_locations;
+   std::map<uint32_t, pp::omod> omods;
+   std::map<uint32_t, pp::star> stars;
+   std::vector<std::jthread> threads;
+   threads.reserve(10);
+   threads.emplace_back(pp::run<pp::lctn>, "../data/xdump_lctn.txt", "LCTN", std::ref(star_locations));
+   threads.emplace_back(pp::run<pp::omod>, "../data/xdump_omod.txt", "OMOD", std::ref(omods));
+   threads.emplace_back(pp::run<pp::star>, "../data/xdump_stars.txt", "STDT", std::ref(stars));
+   for (auto& thread : threads)
+      thread.join();
+   threads.clear();
 
    const auto t1 = std::chrono::steady_clock::now();
    const auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
