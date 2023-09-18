@@ -8,6 +8,7 @@
 #include <regex>
 
 #include "fundamentals.h"
+#include "tools.h"
 
 
 namespace pp
@@ -71,11 +72,12 @@ namespace pp
 
    
 
-   auto get_formid(const std::string& line) -> std::string
+   auto get_formid(const std::string& line) -> uint32_t
    {
       const auto start = line.find('[')+1;
       const auto end = line.find(']');
-      return line.substr(start, end - start);
+      std::string_view sv(line);
+      return from_big(sv.substr(start, end - start));
    }
 
    template<typename T>
@@ -86,12 +88,12 @@ namespace pp
 
 
    template<fillable T>
-   auto run(const std::string& filename, const std::string_view name) -> std::map<std::string, T>
+   auto run(const std::string& filename, const std::string_view name) -> std::map<uint32_t, T>
    {
       std::ifstream f(filename);
       std::string line;
       int line_number = 1;
-      std::map<std::string, T> map;
+      std::map<uint32_t, T> map;
       std::optional<T> next_obj;
       bool looking_for_first_formid = true;
       const std::string name_starter = std::format("FormID: {}", name);
@@ -136,12 +138,12 @@ namespace pp
 
 
    struct lctn {
-      std::string m_formid;
+      uint32_t m_formid;
       int m_system_level{};
       std::string m_name;
       bool m_reject = true;
 
-      explicit lctn(const std::string& formid)
+      explicit lctn(const uint32_t formid)
          : m_formid(formid)
       {
          int start = 0;
@@ -167,14 +169,14 @@ namespace pp
 
 
    struct omod {
-      std::string m_formid;
+      uint32_t m_formid;
       std::optional<std::string> m_name;
       std::vector<property> m_properties;
 
       std::optional<int> m_in_property_level;
       std::vector<std::string> m_next_property_strings;
 
-      explicit omod(const std::string& formid)
+      explicit omod(const uint32_t formid)
          : m_formid(formid)
       {
          m_next_property_strings.reserve(6);
@@ -185,6 +187,7 @@ namespace pp
       {
          return false;
       }
+
       auto build_property() -> void
       {
          const std::regex pattern("Value (\\d) - (.+?): (.+)");
@@ -240,8 +243,8 @@ namespace pp
                .m_step = step
             }
          );
-
       }
+
       auto process_line(const line_content& line) -> void
       {
          extract(line.m_line_content, "FULL - Name", m_name);
