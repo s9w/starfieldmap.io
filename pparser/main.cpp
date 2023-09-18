@@ -5,12 +5,11 @@
 #include <map>
 #include <variant>
 #include <vector>
+#include <regex>
 #include <chrono>
 
 #include "fundamentals.h"
 #include "tools.h"
-
-#include "ctre.hpp"
 
 
 namespace pp
@@ -192,8 +191,7 @@ namespace pp
 
       auto build_property() -> void
       {
-         static constexpr auto pattern = ctll::fixed_string{ "Value (\\d) - (.+?): (.+)" };
-         // const std::regex pattern("Value (\\d) - (.+?): (.+)");
+         const std::regex pattern("Value (\\d) - (.+?): (.+)");
          std::string property_name;
          float value1{};
          float value2{};
@@ -214,25 +212,23 @@ namespace pp
             extract(line, "Step", step);
 
 
-            // std::smatch match;
-            // ctre::match<pattern>(sv)
-            const auto match = ctre::match<pattern>(line);
-            if(line.starts_with("Value ") && match)
+            std::smatch match;
+            if(line.starts_with("Value ") && std::regex_match(line, match, pattern))
             {
-               if(match.get<2>().to_view() == "FormID")
+               if(match[2] == "FormID")
                {
                   m_next_property_strings.clear();
                   return;
                }
                float value{};
-               if(match.get<2>().to_view() == "Float")
-                  value = std::stof(match.get<3>().to_string());
-               else if (match.get<2>().to_view() == "Int")
-                  value = static_cast<float>(std::stoi(match.get<3>().to_string()));
+               if(match[2] == "Float")
+                  value = std::stof(match[3]);
+               else if (match[2] == "Int")
+                  value = static_cast<float>(std::stoi(match[3]));
 
-               if(match.get<1>().to_view() == "1")
+               if(match[1] == "1")
                   value1 = value;
-               else if (match.get<1>().to_view() == "2")
+               else if (match[1] == "2")
                   value2 = value;
             }
          }
