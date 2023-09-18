@@ -3,6 +3,8 @@
 #include <iostream>
 #include <optional>
 #include <map>
+#include <variant>
+#include <vector>
 
 #include "fundamentals.h"
 
@@ -36,10 +38,10 @@ namespace pp
       const line_content& line,
       const std::string& start,
       T& target
-   ) -> void
+   ) -> bool
    {
       if (line.m_line_content.starts_with(start) == false)
-         return;
+         return false;
       if constexpr(is_optional<T>)
       {
          target.emplace();
@@ -58,6 +60,7 @@ namespace pp
       {
          std::terminate();
       }
+      return true;
    }
 
    
@@ -79,7 +82,6 @@ namespace pp
    template<fillable T>
    auto run(const std::string& filename) -> void
    {
-      // global_mode mode = global_mode::starting;
       std::ifstream f(filename);
       std::string line;
       int line_number = 1;
@@ -114,9 +116,22 @@ namespace pp
    }
 
 
+   struct mul_add_prop{
+      float m_mult;
+      float m_add;
+      float m_step;
+   };
+
+   using property = std::variant<mul_add_prop>;
+
    struct obj {
       std::string m_formid;
       std::optional<std::string> m_name;
+      std::vector<property> m_properties;
+
+      std::optional<int> m_in_property_level;
+      std::optional<property> m_next_property;
+
       explicit obj(const std::string& formid)
          : m_formid(formid)
       {
@@ -125,6 +140,44 @@ namespace pp
       auto process_line(const line_content& line) -> void
       {
          extract(line, "FULL - Name", m_name);
+
+         // start property
+         if (line.m_line_content.starts_with("Property #"))
+         {
+            m_in_property_level.emplace(line.m_level);
+         }
+
+         // prop is active
+         else if (m_in_property_level.has_value())
+         {
+            if(line.m_level <= m_in_property_level.value())
+            {
+               // end of this property
+               if (m_next_property.has_value())
+               {
+                  m_properties.push_back(m_next_property.value());
+                  m_next_property.reset();
+               }
+               m_in_property_level.reset();
+            }
+            std::string function_type;
+            extract(line, "Function Type", function_type);
+            if(function_type == "MUL+ADD")
+            {
+               m_next_property.emplace(mul_add_prop{});
+            }
+            if(m_next_property.has_value())
+            {
+               if(std::holds_alternative<mul_add_prop>(m_next_property.value()))
+               {
+                  extract(line, "Value 1 - Float", std::get<mul_add_prop>(m_next_property.value()).m_mult);
+                  extract(line, "Value 2 - Float", std::get<mul_add_prop>(m_next_property.value()).m_add);
+                  extract(line, "Step", std::get<mul_add_prop>(m_next_property.value()).m_step);
+               }
+            }
+         }
+         
+            
       }
    };
 }
@@ -134,3 +187,4 @@ auto main() -> int
 {
    pp::run<pp::obj>("../data/xdump_omod.txt");
 }
+
