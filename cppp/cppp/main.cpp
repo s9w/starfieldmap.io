@@ -7,6 +7,7 @@
 #include <vector>
 #include <regex>
 #include <chrono>
+#include <ranges>
 
 #include <cppp/tools.h>
 
@@ -63,7 +64,6 @@ namespace pp
             ++line_number;
          }
          m_lines.shrink_to_fit();
-         int end = 0;
       }
    };
 
@@ -140,28 +140,36 @@ namespace pp
       }
    };
 
-   struct star {
+   
+
+   struct stdt {
       formid m_formid;
       std::string m_name;
       float m_x{};
       float m_y{};
       float m_z{};
+      bool m_reject = true;
+      int m_star_id{};
 
-      explicit star(const formid formid)
+      explicit stdt(const formid formid)
          : m_formid(formid)
       {
       }
       auto process_line(const line_content& line) -> void
       {
          extract(line.m_line_content, "FULL - Name", m_name);
+         extract(line.m_line_content, "DNAM - Star ID", m_star_id);
          extract(line.m_line_content, "x", m_x);
          extract(line.m_line_content, "y", m_y);
          extract(line.m_line_content, "z", m_z);
+
+         if (m_name.empty() == false)
+            m_reject = false;
       }
 
       [[nodiscard]] auto reject() const -> bool
       {
-         return false;
+         return m_reject;
       }
    };
    
@@ -173,7 +181,7 @@ namespace pp
    };
 
    enum class body_type{unset, planet, moon};
-   struct planet {
+   struct pndt {
       formid m_formid{};
       bool m_reject = true;
       list_item_detector m_list_item_detector;
@@ -186,7 +194,7 @@ namespace pp
       body_type m_body_type = body_type::unset;
       std::vector<planet_biome> m_biome_refs;
 
-      explicit planet(const formid formid)
+      explicit pndt(const formid formid)
          : m_formid(formid)
          , m_list_item_detector("PPBD - Biome #")
       {
@@ -318,25 +326,126 @@ namespace pp
          m_property_builder.process_line(line, m_properties, omod::build_property);
       }
    };
-}
+
+   struct moon{
+      std::string m_name;
+      float m_temperature{};
+   };
+
+   struct planet{
+      std::string m_name;
+      float m_temperature{};
+      std::vector<moon> m_moons;
+      int m_planet_id{};
+   };
+
+   struct star {
+      float m_x{};
+      float m_y{};
+      float m_z{};
+      int m_level{};
+      std::string m_name;
+      std::vector<planet> m_planets;
+   };
+
+
+   auto build_universe(
+      const formid_map<pp::lctn>& lctns,
+      const formid_map<pp::stdt>& stdts,
+      const formid_map<pp::pndt>& pndts
+   ) -> std::unordered_map<int, star>
+   {
+      // Combine star-LCTN and STDT
+      std::map<std::string, formid> name_to_lctn;
+      for (const auto& [key, value] : lctns)
+         name_to_lctn.emplace(value.m_name, key);
+
+      std::unordered_map<int, star> starid_to_star;
+      for (const auto& value : stdts | std::views::values)
+      {
+         const auto& lctn_formid = name_to_lctn.at(value.m_name);
+         const auto& lctn = lctns.at(lctn_formid);
+         starid_to_star.emplace(
+            value.m_star_id,
+            star{
+               .m_x = value.m_x,
+               .m_y = value.m_y,
+               .m_z = value.m_z,
+               .m_level = lctn.m_system_level,
+               .m_name = value.m_name
+            }
+         );
+      }
+
+      // Prep planets
+      std::unordered_map<int, std::vector<planet>> planets_by_starid;
+      for (const auto& value : pndts | std::views::values)
+      {
+         if (value.m_body_type != body_type::planet)
+            continue;
+         planets_by_starid[value.m_star_id].emplace_back(
+            planet{
+               .m_name = value.m_name,
+               .m_temperature = value.m_temperature,
+               .m_planet_id = value.m_planet_id
+            }
+         );
+      }
+
+      // Add moons to planets
+      for (const auto& value : pndts | std::views::values)
+      {
+         if (value.m_body_type != body_type::moon)
+            continue;
+         auto& planets = planets_by_starid.at(value.m_star_id);
+         for (auto& planet : planets)
+         {
+            if (planet.m_planet_id != value.m_primary_planet_id)
+               continue;
+            planet.m_moons.push_back(
+               moon{
+                  .m_name = value.m_name,
+                  .m_temperature = value.m_temperature
+               }
+            );
+         }
+      }
+
+      // Add planets to stars
+      for (const auto& [starid, value] : planets_by_starid)
+      {
+         starid_to_star.at(starid).m_planets = value;
+      }
+
+      return starid_to_star;
+   }
+
+} // namespace pp
+
+
 
 
 auto main() -> int
 {
    using namespace pp;
-   ms_timer timer;
+   std::optional<ms_timer> timer;
+   timer.emplace();
 
-   formid_map<pp::lctn> star_locations;
+   formid_map<pp::lctn> lctns;
    formid_map<pp::omod> omods;
-   formid_map<pp::star> stars;
-   formid_map<pp::planet> planets;
+   formid_map<pp::stdt> stdts;
+   formid_map<pp::pndt> pndts;
    std::vector<std::jthread> threads;
    threads.reserve(10);
-   threads.emplace_back(pp::run<pp::lctn>, "../../data/xdump_lctn.txt", "LCTN", std::ref(star_locations));
+   threads.emplace_back(pp::run<pp::lctn>, "../../data/xdump_lctn.txt", "LCTN", std::ref(lctns));
+   threads.emplace_back(pp::run<pp::stdt>, "../../data/xdump_stars.txt", "STDT", std::ref(stdts));
+   threads.emplace_back(pp::run<pp::pndt>, "../../data/xdump_planets.txt", "PNDT", std::ref(pndts));
    threads.emplace_back(pp::run<pp::omod>, "../../data/xdump_omod.txt", "OMOD", std::ref(omods));
-   threads.emplace_back(pp::run<pp::star>, "../../data/xdump_stars.txt", "STDT", std::ref(stars));
-   threads.emplace_back(pp::run<pp::planet>, "../../data/xdump_planets.txt", "PNDT", std::ref(planets));
    threads.clear();
+   timer.emplace();
+
+   const auto universe = build_universe(lctns, stdts, pndts);
+   timer.reset();
 
    int end = 0;
 }
