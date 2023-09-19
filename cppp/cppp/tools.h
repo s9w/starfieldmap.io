@@ -44,7 +44,7 @@ namespace pp{
    };
 
    auto get_formid(const std::string_view line) -> formid;
-   auto get_between(const std::string_view line, const char left, const char right) -> std::string_view;
+   constexpr auto get_between(const std::string_view line, const char left, const char right) -> std::string_view;
 
    template<typename T>
    auto extract(

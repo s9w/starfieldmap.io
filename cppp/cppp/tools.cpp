@@ -37,12 +37,13 @@ auto pp::get_formid(const std::string_view line) -> formid
 }
 
 
-auto pp::get_between(const std::string_view line, const char left, const char right) -> std::string_view
+constexpr auto pp::get_between(const std::string_view line, const char left, const char right) -> std::string_view
 {
    const auto start = line.find(left) + 1;
-   const auto end = line.find(right);
+   const auto end = line.rfind(right);
    return line.substr(start, end - start);
 }
+static_assert(pp::get_between("a_bc_d", '_', '_') == "bc");
 
 
 auto pp::from_little(std::string_view str) -> formid
