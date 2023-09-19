@@ -506,6 +506,48 @@ namespace pp
       return starid_to_star;
    }
 
+
+   auto print(std::string& str, const body& b, const int indentation) -> void
+   {
+      const std::string indentation_str = std::string(indentation, ' ');
+
+      str += std::format("{}{}, {}C, {}g, {}% O2, flora: {}, fauna: {} \n", indentation_str, b.m_name, b.m_temperature, b.m_gravity, b.m_oxygen_amount, b.m_flora.size(), b.m_fauna.size());
+   }
+
+   auto print(std::string& str, const planet& p, const int indentation) -> void
+   {
+      const body base = static_cast<body>(p);
+      print(str, base, indentation);
+      const std::string indentation_str = std::string(indentation, ' ');
+      if(p.m_moons.empty() == false)
+      {
+         for(const auto& m : p.m_moons)
+         {
+            print(str, m, indentation + 2);
+         }
+      }
+   }
+
+   auto print(std::string& str, const star& s, const int indentation) -> void
+   {
+      str += std::format("{}\n", s.m_name);
+      for (const auto& p : s.m_planets)
+      {
+         print(str, p, indentation+2);
+      }
+   }
+
+   auto print(const std::unordered_map<int, star>& universe)
+   {
+      std::string str;
+      for (const auto& star : universe | std::views::values)
+      {
+         print(str, star, 0);
+      }
+      std::ofstream file("out.txt");
+      file << str;
+   }
+
 } // namespace pp
 
 
@@ -530,7 +572,12 @@ auto main() -> int
    threads.clear();
    timer.emplace();
 
+   
+
    const std::unordered_map<int, star> universe = build_universe(lctns, stdts, pndts);
+   print(universe);
+
+
    [[maybe_unused]] const auto& narion = universe.at(88327);
    timer.reset();
 
