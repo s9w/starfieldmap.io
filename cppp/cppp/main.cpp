@@ -188,9 +188,15 @@ namespace pp
 
    struct animal{
       formid m_formid;
-      
    };
    auto operator==(const animal& a, const animal& b) -> bool
+   {
+      return a.m_formid == b.m_formid;
+   }
+   struct plant{
+      formid m_formid;
+   };
+   auto operator==(const plant& a, const plant& b) -> bool
    {
       return a.m_formid == b.m_formid;
    }
@@ -201,6 +207,7 @@ namespace pp
       bool m_reject = true;
       list_item_detector m_biome_detector;
       list_item_detector m_animal_detector;
+      list_item_detector m_flora_detector;
 
       std::string m_name;
       float m_gravity;
@@ -211,11 +218,13 @@ namespace pp
       body_type m_body_type = body_type::unset;
       std::vector<planet_biome> m_biome_refs;
       std::vector<animal> m_animal_refs;
+      std::vector<plant> m_flora_refs;
 
       explicit pndt(const formid formid)
          : m_formid(formid)
          , m_biome_detector("PPBD - Biome #")
          , m_animal_detector("Fauna #")
+         , m_flora_detector("Flora #")
       {
 
       }
@@ -241,11 +250,26 @@ namespace pp
             return biome;
          };
          m_biome_detector.process_line(line, m_biome_refs, biome_generator);
+
          const auto animal_generator = [](const std::vector<std::string_view>& lines) -> std::optional<animal> {
             pp_assert(lines.size() == 1);
             return animal{.m_formid = get_formid(lines[0])};
             };
          m_animal_detector.process_line(line, m_animal_refs, animal_generator);
+
+         const auto flora_generator = [](const std::vector<std::string_view>& lines) -> std::optional<plant> {
+            std::string str;
+            plant result{};
+            for(const auto& l : lines)
+            {
+               if(extract(l, "Model", str))
+               {
+                  result.m_formid = get_formid(l);
+               }
+            }
+            return result;
+            };
+         m_flora_detector.process_line(line, m_flora_refs, flora_generator);
 
          std::string body_type_str;
          if(extract(line.m_line_content, "CNAM - Body type", body_type_str))
@@ -355,6 +379,7 @@ namespace pp
    struct moon{
       std::string m_name;
       std::vector<animal> m_fauna;
+      std::vector<plant> m_flora;
       float m_temperature{};
       float m_gravity{};
    };
@@ -364,6 +389,7 @@ namespace pp
       float m_temperature{};
       float m_gravity{};
       std::vector<animal> m_fauna;
+      std::vector<plant> m_flora;
       std::vector<moon> m_moons;
       int m_planet_id{};
    };
@@ -418,6 +444,7 @@ namespace pp
                .m_temperature = value.m_temperature,
                .m_gravity = value.m_gravity,
                .m_fauna = value.m_animal_refs,
+               .m_flora = value.m_flora_refs,
                .m_planet_id = value.m_planet_id
             }
          );
@@ -437,6 +464,7 @@ namespace pp
                moon{
                   .m_name = value.m_name,
                   .m_fauna = value.m_animal_refs,
+                  .m_flora = value.m_flora_refs,
                   .m_temperature = value.m_temperature,
                   .m_gravity = value.m_gravity
                }
