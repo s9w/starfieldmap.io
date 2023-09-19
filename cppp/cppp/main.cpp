@@ -376,21 +376,16 @@ namespace pp
       }
    };
 
-   struct moon{
+   struct body {
       std::string m_name;
-      std::vector<animal> m_fauna;
-      std::vector<plant> m_flora;
       float m_temperature{};
       float m_gravity{};
+      std::vector<animal> m_fauna;
+      std::vector<plant> m_flora;
+      
    };
-
-   struct planet{
-      std::string m_name;
-      float m_temperature{};
-      float m_gravity{};
-      std::vector<animal> m_fauna;
-      std::vector<plant> m_flora;
-      std::vector<moon> m_moons;
+   struct planet : body {
+      std::vector<body> m_moons;
       int m_planet_id{};
    };
 
@@ -440,12 +435,15 @@ namespace pp
             continue;
          planets_by_starid[value.m_star_id].emplace_back(
             planet{
-               .m_name = value.m_name,
-               .m_temperature = value.m_temperature,
-               .m_gravity = value.m_gravity,
-               .m_fauna = value.m_animal_refs,
-               .m_flora = value.m_flora_refs,
-               .m_planet_id = value.m_planet_id
+               body{
+                  .m_name = value.m_name,
+                  .m_temperature = value.m_temperature,
+                  .m_gravity = value.m_gravity,
+                  .m_fauna = value.m_animal_refs,
+                  .m_flora = value.m_flora_refs
+               },
+               {},
+               value.m_planet_id
             }
          );
       }
@@ -455,18 +453,18 @@ namespace pp
       {
          if (value.m_body_type != body_type::moon)
             continue;
-         auto& planets = planets_by_starid.at(value.m_star_id);
-         for (auto& planet : planets)
+         auto& system_planets = planets_by_starid.at(value.m_star_id);
+         for (auto& planet : system_planets)
          {
             if (planet.m_planet_id != value.m_primary_planet_id)
                continue;
             planet.m_moons.push_back(
-               moon{
+               body{
                   .m_name = value.m_name,
-                  .m_fauna = value.m_animal_refs,
-                  .m_flora = value.m_flora_refs,
                   .m_temperature = value.m_temperature,
-                  .m_gravity = value.m_gravity
+                  .m_gravity = value.m_gravity,
+                  .m_fauna = value.m_animal_refs,
+                  .m_flora = value.m_flora_refs
                }
             );
          }
