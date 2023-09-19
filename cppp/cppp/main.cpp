@@ -142,6 +142,27 @@ namespace pp
       }
    };
 
+
+   struct biom {
+      formid m_formid;
+      std::string m_name;
+
+      explicit biom(const formid formid)
+         : m_formid(formid)
+      {
+
+      }
+      auto process_line(const line_content& line) -> void
+      {
+         extract(line.m_line_content, "FULL - Name", m_name);
+      }
+
+      [[nodiscard]] auto reject() const -> bool
+      {
+         return false;
+      }
+   };
+
    
 
    struct stdt {
@@ -176,12 +197,12 @@ namespace pp
    };
    
 
-   struct planet_biome{
+   struct planet_biome_ref{
       float m_percentage{};
       formid m_biome_ref{};
       formid m_resource_gen_override{};
    };
-   auto operator==(const planet_biome& a, const planet_biome& b) -> bool
+   auto operator==(const planet_biome_ref& a, const planet_biome_ref& b) -> bool
    {
       return a.m_biome_ref == b.m_biome_ref;
    }
@@ -217,7 +238,7 @@ namespace pp
       int m_planet_id{};
       int m_primary_planet_id{};
       body_type m_body_type = body_type::unset;
-      std::vector<planet_biome> m_biome_refs;
+      std::vector<planet_biome_ref> m_biome_refs;
       std::vector<animal> m_animal_refs;
       std::vector<plant> m_flora_refs;
       std::vector<float> m_oxygen_amount;
@@ -242,15 +263,15 @@ namespace pp
          extract(line.m_line_content, "Primary planet ID", m_primary_planet_id);
          extract(line.m_line_content, "Gravity", m_gravity);
 
-         const auto biome_generator = [](const std::vector<std::string_view>& lines) -> std::optional<planet_biome> {
-            planet_biome biome;
+         const auto biome_generator = [](const std::vector<std::string_view>& lines) -> std::optional<planet_biome_ref> {
+            planet_biome_ref biome_ref;
             for (const auto& l : lines)
             {
-               extract(l, "Percentage", biome.m_percentage);
-               extract(l, "Biome reference", biome.m_biome_ref);
-               extract(l, "Resource gen override", biome.m_resource_gen_override);
+               extract(l, "Percentage", biome_ref.m_percentage);
+               extract(l, "Biome reference", biome_ref.m_biome_ref);
+               extract(l, "Resource gen override", biome_ref.m_resource_gen_override);
             }
-            return biome;
+            return biome_ref;
          };
          m_biome_detector.process_line(line, m_biome_refs, biome_generator);
 
@@ -397,6 +418,11 @@ namespace pp
       }
    };
 
+   struct biome{
+      float m_percentage{};
+      std::string m_name;
+   };
+
    struct body {
       formid m_formid;
       std::string m_name;
@@ -405,6 +431,7 @@ namespace pp
       std::vector<animal> m_fauna;
       std::vector<plant> m_flora;
       float m_oxygen_amount{};
+      std::vector<biome> m_biomes;
    };
    struct planet : body {
       std::vector<body> m_moons;
@@ -429,10 +456,34 @@ namespace pp
       return vec[0];
    }
 
+   auto get_biomes(const std::vector<planet_biome_ref>& refs, const formid_map<pp::biom>& bioms) -> std::vector<biome>
+   {
+      std::vector<biome> result;
+      result.reserve(refs.size());
+      for(const auto& ref : refs)
+      {
+         result.push_back(
+            biome{
+               .m_percentage = ref.m_percentage,
+               .m_name = bioms.at(ref.m_biome_ref).m_name
+            }
+         );
+      }
+
+      // Sort by most common first
+      const auto pred = [](const biome& a, const biome& b){
+         return a.m_percentage > b.m_percentage;
+      };
+      std::ranges::sort(result, pred);
+
+      return result;
+   }
+
    auto build_universe(
       const formid_map<pp::lctn>& lctns,
       const formid_map<pp::stdt>& stdts,
-      const formid_map<pp::pndt>& pndts
+      const formid_map<pp::pndt>& pndts,
+      const formid_map<pp::biom>& bioms
    ) -> std::unordered_map<int, star>
    {
       // Combine star-LCTN and STDT
@@ -461,7 +512,7 @@ namespace pp
       constexpr auto moons = std::views::filter([](const pndt& el) {return el.m_body_type == body_type::moon; });
       constexpr auto planets = std::views::filter([](const pndt& el) {return el.m_body_type == body_type::planet; });
 
-      auto get_body = [](const pndt& value){
+      auto get_body = [&](const pndt& value){
          return body{
             .m_formid = value.m_formid,
             .m_name = value.m_name,
@@ -469,7 +520,8 @@ namespace pp
             .m_gravity = value.m_gravity,
             .m_fauna = value.m_animal_refs,
             .m_flora = value.m_flora_refs,
-            .m_oxygen_amount = get_oxygen_amount(value.m_oxygen_amount)
+            .m_oxygen_amount = get_oxygen_amount(value.m_oxygen_amount),
+            .m_biomes = get_biomes(value.m_biome_refs, bioms)
          };
       };
 
@@ -511,11 +563,24 @@ namespace pp
    }
 
 
+   constexpr int indent_size = 4;
    auto print(std::string& str, const body& b, const int indentation) -> void
    {
       const std::string indentation_str = std::string(indentation, ' ');
 
-      str += std::format("{}{} ({}), {}C, {}g, {}% O2, flora: {}, fauna: {} \n", indentation_str, b.m_name, as_big(b.m_formid), b.m_temperature, b.m_gravity, b.m_oxygen_amount, b.m_flora.size(), b.m_fauna.size());
+      std::string biome_str;
+      for(const auto& bi : b.m_biomes)
+      {
+         const bool first = biome_str.empty();
+         if (first == false)
+            biome_str += ", ";
+         biome_str += std::format("{}% {}", bi.m_percentage, bi.m_name);
+      }
+
+      str += std::format(
+         "{}{} ({}), {}C, {}g, {}% O2, flora: {}, fauna: {}; {}\n",
+         indentation_str, b.m_name, as_big(b.m_formid), b.m_temperature, b.m_gravity, b.m_oxygen_amount, b.m_flora.size(), b.m_fauna.size(), biome_str
+      );
    }
 
    auto print(std::string& str, const planet& p, const int indentation) -> void
@@ -527,17 +592,17 @@ namespace pp
       {
          for(const auto& m : p.m_moons)
          {
-            print(str, m, indentation + 2);
+            print(str, m, indentation + indent_size);
          }
       }
    }
 
    auto print(std::string& str, const star& s, const int indentation) -> void
    {
-      str += std::format("{} system ({})\n", s.m_name, as_big(s.m_formid));
+      str += std::format("{} system (Level {}; {})\n", s.m_name, s.m_level, as_big(s.m_formid));
       for (const auto& p : s.m_planets)
       {
-         print(str, p, indentation+2);
+         print(str, p, indentation + indent_size);
       }
    }
 
@@ -567,18 +632,20 @@ auto main() -> int
    formid_map<pp::omod> omods;
    formid_map<pp::stdt> stdts;
    formid_map<pp::pndt> pndts;
+   formid_map<pp::biom> bioms;
    std::vector<std::jthread> threads;
    threads.reserve(10);
    threads.emplace_back(pp::run<pp::lctn>, "../../data/xdump_lctn.txt", "LCTN", std::ref(lctns));
    threads.emplace_back(pp::run<pp::stdt>, "../../data/xdump_stars.txt", "STDT", std::ref(stdts));
    threads.emplace_back(pp::run<pp::pndt>, "../../data/xdump_planets.txt", "PNDT", std::ref(pndts));
    threads.emplace_back(pp::run<pp::omod>, "../../data/xdump_omod.txt", "OMOD", std::ref(omods));
+   threads.emplace_back(pp::run<pp::biom>, "../../data/xdump_biomes.txt", "BIOM", std::ref(bioms));
    threads.clear();
    timer.emplace();
 
    
 
-   const std::unordered_map<int, star> universe = build_universe(lctns, stdts, pndts);
+   const std::unordered_map<int, star> universe = build_universe(lctns, stdts, pndts, bioms);
    print(universe);
 
 
