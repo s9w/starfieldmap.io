@@ -427,12 +427,13 @@ namespace pp
          );
       }
 
+      constexpr auto moons = std::views::filter([](const pndt& el) {return el.m_body_type == body_type::moon; });
+      constexpr auto planets = std::views::filter([](const pndt& el) {return el.m_body_type == body_type::planet; });
+
       // Prep planets
       std::unordered_map<int, std::vector<planet>> planets_by_starid;
-      for (const auto& value : pndts | std::views::values)
+      for (const auto& value : pndts | std::views::values | planets)
       {
-         if (value.m_body_type != body_type::planet)
-            continue;
          planets_by_starid[value.m_star_id].emplace_back(
             planet{
                body{
@@ -447,12 +448,11 @@ namespace pp
             }
          );
       }
+      
 
       // Add moons to planets
-      for (const auto& value : pndts | std::views::values)
+      for (const auto& value : pndts | std::views::values | moons)
       {
-         if (value.m_body_type != body_type::moon)
-            continue;
          auto& system_planets = planets_by_starid.at(value.m_star_id);
          for (auto& planet : system_planets)
          {
