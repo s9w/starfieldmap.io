@@ -31,12 +31,17 @@ auto pp::get_indentation_level(const std::string_view& line) -> int
 }
 
 
-auto pp::get_formid(const std::string_view& line) -> formid
+auto pp::get_formid(const std::string_view line) -> formid
 {
-   const auto start = line.find('[') + 1;
-   const auto end = line.find(']');
-   const std::string_view sv(line);
-   return from_big(sv.substr(start, end - start));
+   return from_big(get_between(line, '[', ']'));
+}
+
+
+auto pp::get_between(const std::string_view line, const char left, const char right) -> std::string_view
+{
+   const auto start = line.find(left) + 1;
+   const auto end = line.find(right);
+   return line.substr(start, end - start);
 }
 
 

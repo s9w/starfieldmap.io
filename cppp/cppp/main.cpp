@@ -230,6 +230,7 @@ namespace pp
       list_item_detector m_animal_detector;
       list_item_detector m_flora_detector;
       list_item_detector m_atmosphere_detector;
+      list_item_detector m_trait_detector;
 
       std::string m_name;
       float m_gravity;
@@ -242,6 +243,7 @@ namespace pp
       std::vector<animal> m_animal_refs;
       std::vector<plant> m_flora_refs;
       std::vector<float> m_oxygen_amount;
+      std::vector<std::string> m_traits;
 
       explicit pndt(const formid formid)
          : m_formid(formid)
@@ -249,6 +251,7 @@ namespace pp
          , m_animal_detector("Fauna #")
          , m_flora_detector("Flora #")
          , m_atmosphere_detector("Keyword #")
+         , m_trait_detector("Keyword #")
       {
 
       }
@@ -312,6 +315,17 @@ namespace pp
             return std::nullopt;
             };
          m_atmosphere_detector.process_line(line, m_oxygen_amount, keyword_generator);
+
+         const auto trait_generator = [](const std::vector<std::string_view>& lines) -> std::optional<std::string> {
+            if (lines.size() == 1)
+            {
+               const auto name = get_between(lines[0], '<', '>');
+               if(name.starts_with("PlanetTrait"))
+                  return std::string(get_between(lines[0], '\"', '\"'));
+            }
+            return std::nullopt;
+            };
+         m_trait_detector.process_line(line, m_traits, trait_generator);
 
          std::string body_type_str;
          if(extract(line.m_line_content, "CNAM - Body type", body_type_str))
@@ -432,6 +446,7 @@ namespace pp
       std::vector<plant> m_flora;
       float m_oxygen_amount{};
       std::vector<biome> m_biomes;
+      std::vector<std::string> m_traits;
    };
    struct planet : body {
       std::vector<body> m_moons;
@@ -521,7 +536,8 @@ namespace pp
             .m_fauna = value.m_animal_refs,
             .m_flora = value.m_flora_refs,
             .m_oxygen_amount = get_oxygen_amount(value.m_oxygen_amount),
-            .m_biomes = get_biomes(value.m_biome_refs, bioms)
+            .m_biomes = get_biomes(value.m_biome_refs, bioms),
+            .m_traits = value.m_traits
          };
       };
 
@@ -578,8 +594,8 @@ namespace pp
       }
 
       str += std::format(
-         "{}{} ({}), {}C, {}g, {}% O2, flora: {}, fauna: {}; {}\n",
-         indentation_str, b.m_name, as_big(b.m_formid), b.m_temperature, b.m_gravity, b.m_oxygen_amount, b.m_flora.size(), b.m_fauna.size(), biome_str
+         "{}{} ({}), {}C, {}g, {}% O2, flora: {}, fauna: {}; {} traits; {}\n",
+         indentation_str, b.m_name, as_big(b.m_formid), b.m_temperature, b.m_gravity, b.m_oxygen_amount, b.m_flora.size(), b.m_fauna.size(), b.m_traits.size(), biome_str
       );
    }
 

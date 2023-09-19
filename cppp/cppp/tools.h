@@ -28,6 +28,11 @@ namespace pp{
       std::chrono::steady_clock::time_point m_t0;
       explicit ms_timer();
       ~ms_timer();
+
+      ms_timer(const ms_timer&) = delete;
+      ms_timer& operator=(const ms_timer&) = delete;
+      ms_timer(ms_timer&&) = delete;
+      ms_timer& operator=(ms_timer&&) = delete;
    };
 
    auto get_indentation_level(const std::string_view& line) -> int;
@@ -38,7 +43,8 @@ namespace pp{
       int m_line_number;
    };
 
-   auto get_formid(const std::string_view& line) -> formid;
+   auto get_formid(const std::string_view line) -> formid;
+   auto get_between(const std::string_view line, const char left, const char right) -> std::string_view;
 
    template<typename T>
    auto extract(
