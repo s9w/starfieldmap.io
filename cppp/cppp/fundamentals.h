@@ -34,7 +34,7 @@ namespace pp
    constexpr bool is_T_or_opt_T = std::same_as<opt_base_type_t<T>, target_type>;
 }
 
-constexpr auto pp::pp_assert(const bool condition, const std::string_view msg) -> void
+constexpr auto pp::pp_assert(const bool condition, [[maybe_unused]] const std::string_view msg) -> void
 {
    if (condition == false)
    {
