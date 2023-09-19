@@ -23,20 +23,60 @@ namespace pp
       {t.process_line(lc)} -> std::same_as<void>;
    };
 
+   auto get_file_str(const std::string_view& filename) -> std::string
+   {
+      std::ifstream t(filename.data());
+      t.seekg(0, std::ios::end);
+      const ptrdiff_t size = t.tellg();
+      std::string result;
+      result.resize(size);
+      t.seekg(0);
+      t.read(result.data(), size);
+      return result;
+   }
+
+   struct file_chopper{
+      std::string m_file_content;
+      std::vector<line_content> m_lines;
+      explicit file_chopper(const std::string_view& filename)
+         : m_file_content(get_file_str(filename))
+      {
+         m_lines.reserve(m_file_content.size() / 20);
+         ptrdiff_t last_newline_pos = -1;
+         int line_number = 1;
+         while (true)
+         {
+            const auto next_newline_pos = m_file_content.find('\n', last_newline_pos + 1);
+            if (next_newline_pos == std::string::npos)
+               break;
+            std::string_view content(m_file_content.data() + last_newline_pos + 1, m_file_content.data() + next_newline_pos);
+            const auto level = get_indentation_level(content);
+            content.remove_prefix(static_cast<size_t>(level) * 2);
+            m_lines.emplace_back(
+               line_content{
+                  .m_level = level,
+                  .m_line_content = content,
+                  .m_line_number = line_number
+               }
+            );
+            last_newline_pos = static_cast<ptrdiff_t>(next_newline_pos);
+            ++line_number;
+         }
+         m_lines.shrink_to_fit();
+         int end = 0;
+      }
+   };
 
    template<fillable T>
-   auto run(const std::string& filename, const std::string_view name, formid_map<T>& map) -> void
+   auto run(const std::string_view& filename, const std::string_view name, formid_map<T>& map) -> void
    {
-      std::ifstream f(filename);
-      std::string line;
-      int line_number = 1;
+      const file_chopper chopper(filename);
       std::optional<T> next_obj;
       bool looking_for_first_formid = true;
       const std::string name_starter = std::format("FormID: {}", name);
-      while (std::getline(f, line))
+      for(const line_content&content : chopper.m_lines)
       {
-         const line_content content = get_line_content(std::move(line), line_number);
-
+         
          if (content.m_line_content.starts_with(name_starter))
          {
             if(looking_for_first_formid == false)
@@ -54,7 +94,6 @@ namespace pp
          {
             next_obj.value().process_line(content);
          }
-         ++line_number;
       }
       if (next_obj.value().reject() == false)
          map.emplace(next_obj.value().m_formid, next_obj.value());
@@ -163,7 +202,7 @@ namespace pp
          extract(line.m_line_content, "Planet ID", m_planet_id);
          extract(line.m_line_content, "Primary planet ID", m_primary_planet_id);
 
-         const auto biome_generator = [](const std::vector<std::string>& lines) -> std::optional<planet_biome> {
+         const auto biome_generator = [](const std::vector<std::string_view>& lines) -> std::optional<planet_biome> {
             planet_biome biome;
             for (const auto& l : lines)
             {
@@ -217,7 +256,7 @@ namespace pp
          return false;
       }
 
-      static auto build_property(const std::vector<std::string>& lines) -> std::optional<property>
+      static auto build_property(const std::vector<std::string_view>& lines) -> std::optional<property>
       {
          const std::regex pattern("Value (\\d) - (.+?): (.+)");
          std::string property_name;
@@ -240,7 +279,8 @@ namespace pp
 
 
             std::smatch match;
-            if(line.starts_with("Value ") && std::regex_match(line, match, pattern))
+            std::string line_str(line);
+            if(line.starts_with("Value ") && std::regex_match(line_str, match, pattern)) // TODO: wow this is atrocious
             {
                if(match[2] == "FormID")
                {
@@ -296,8 +336,6 @@ auto main() -> int
    threads.emplace_back(pp::run<pp::omod>, "../../data/xdump_omod.txt", "OMOD", std::ref(omods));
    threads.emplace_back(pp::run<pp::star>, "../../data/xdump_stars.txt", "STDT", std::ref(stars));
    threads.emplace_back(pp::run<pp::planet>, "../../data/xdump_planets.txt", "PNDT", std::ref(planets));
-   for (auto& thread : threads)
-      thread.join();
    threads.clear();
 
    const auto t1 = std::chrono::steady_clock::now();

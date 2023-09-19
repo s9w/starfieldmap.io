@@ -5,7 +5,7 @@
 #include <string>
 
 
-auto pp::get_indentation_level(const std::string& line) -> int
+auto pp::get_indentation_level(const std::string_view& line) -> int
 {
    int i = 0;
    while (line[i] == ' ')
@@ -14,20 +14,11 @@ auto pp::get_indentation_level(const std::string& line) -> int
 }
 
 
-auto pp::get_line_content(std::string&& line, const int line_number) -> line_content
-{
-   const auto level = get_indentation_level(line);
-   std::string content = std::move(line);
-   content.erase(0, level * 2);
-   return { level, std::move(content), line_number };
-}
-
-
-auto pp::get_formid(const std::string& line) -> formid
+auto pp::get_formid(const std::string_view& line) -> formid
 {
    const auto start = line.find('[') + 1;
    const auto end = line.find(']');
-   std::string_view sv(line);
+   const std::string_view sv(line);
    return from_big(sv.substr(start, end - start));
 }
 

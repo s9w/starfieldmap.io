@@ -12,20 +12,19 @@
 namespace pp
 {
    using formid = strong::type<uint32_t, struct my_formid, strong::regular, strong::bitarithmetic, strong::ordered >;
-   auto get_indentation_level(const std::string& line) -> int;
+   auto get_indentation_level(const std::string_view& line) -> int;
 
    struct line_content {
       int m_level;
-      std::string m_line_content;
+      std::string_view m_line_content;
       int m_line_number;
    };
 
-   auto get_line_content(std::string&& line, const int line_number) -> line_content;
-   auto get_formid(const std::string& line) -> formid;
+   auto get_formid(const std::string_view& line) -> formid;
 
    template<typename T>
    auto extract(
-      const std::string& line,
+      const std::string_view& line,
       const std::string_view start,
       T& target
    ) -> bool
@@ -44,11 +43,11 @@ namespace pp
       }
       else if constexpr (is_T_or_opt_T<T, float>)
       {
-         target = std::stof(value_substr);
+         std::from_chars(value_substr.data(), value_substr.data() + value_substr.size(), target);
       }
       else if constexpr (is_T_or_opt_T<T, int>)
       {
-         target = std::stoi(value_substr);
+         std::from_chars(value_substr.data(), value_substr.data()+ value_substr.size(), target);
       }
       else if constexpr (is_T_or_opt_T<T, formid>)
       {
@@ -63,10 +62,10 @@ namespace pp
 
    struct list_item_detector {
       std::optional<int> m_in_property_level;
-      std::vector<std::string> m_next_property_strings;
+      std::vector<std::string_view> m_next_property_strings;
       std::string m_start_str;
 
-      explicit list_item_detector(const std::string start_str)
+      explicit list_item_detector(const std::string_view start_str)
          : m_start_str(start_str)
       {
          m_next_property_strings.reserve(10);
