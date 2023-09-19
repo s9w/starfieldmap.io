@@ -12,6 +12,24 @@
 namespace pp
 {
    using formid = strong::type<uint32_t, struct my_formid, strong::regular, strong::bitarithmetic, strong::ordered >;
+}
+
+template <>
+struct std::hash<pp::formid>
+{
+   constexpr auto operator()(const pp::formid& k) const noexcept -> std::size_t
+   {
+      return k.value_of();
+   }
+};
+
+namespace pp{
+   struct ms_timer{
+      std::chrono::steady_clock::time_point m_t0;
+      explicit ms_timer();
+      ~ms_timer();
+   };
+
    auto get_indentation_level(const std::string_view& line) -> int;
 
    struct line_content {

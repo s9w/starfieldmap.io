@@ -14,7 +14,7 @@
 namespace pp
 {
    template<typename T>
-   using formid_map = std::map<formid, T>;
+   using formid_map = std::unordered_map<formid, T>;
    
 
    template<typename T>
@@ -324,7 +324,7 @@ namespace pp
 auto main() -> int
 {
    using namespace pp;
-   const auto t0 = std::chrono::steady_clock::now();
+   ms_timer timer;
 
    formid_map<pp::lctn> star_locations;
    formid_map<pp::omod> omods;
@@ -337,10 +337,6 @@ auto main() -> int
    threads.emplace_back(pp::run<pp::star>, "../../data/xdump_stars.txt", "STDT", std::ref(stars));
    threads.emplace_back(pp::run<pp::planet>, "../../data/xdump_planets.txt", "PNDT", std::ref(planets));
    threads.clear();
-
-   const auto t1 = std::chrono::steady_clock::now();
-   const auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
-   std::cout << "ms: " << dt << "\n";
 
    int end = 0;
 }

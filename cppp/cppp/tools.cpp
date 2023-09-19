@@ -3,6 +3,23 @@
 #include <cstdint>
 #include <format>
 #include <string>
+#include <iostream>
+#include <chrono>
+
+
+pp::ms_timer::ms_timer()
+   : m_t0(std::chrono::steady_clock::now())
+{
+   
+}
+
+
+pp::ms_timer::~ms_timer()
+{
+   const auto t1 = std::chrono::steady_clock::now();
+   const auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - m_t0);
+   std::cout << "ms: " << dt << "\n";
+}
 
 
 auto pp::get_indentation_level(const std::string_view& line) -> int
