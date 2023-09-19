@@ -8,12 +8,13 @@
 #include <regex>
 #include <chrono>
 
-#include "tools.h"
+#include <cppp/tools.h>
 
 
 namespace pp
 {
-
+   template<typename T>
+   using formid_map = std::map<formid, T>;
    
 
    template<typename T>
@@ -24,7 +25,7 @@ namespace pp
 
 
    template<fillable T>
-   auto run(const std::string& filename, const std::string_view name, std::map<uint32_t, T>& map) -> void
+   auto run(const std::string& filename, const std::string_view name, formid_map<T>& map) -> void
    {
       std::ifstream f(filename);
       std::string line;
@@ -72,12 +73,12 @@ namespace pp
 
 
    struct lctn {
-      uint32_t m_formid;
+      formid m_formid;
       int m_system_level{};
       std::string m_name;
       bool m_reject = true;
 
-      explicit lctn(const uint32_t formid)
+      explicit lctn(const formid formid)
          : m_formid(formid)
       {
 
@@ -88,7 +89,7 @@ namespace pp
          extract(line.m_line_content, "FULL - Name", m_name);
 
          std::string m_parent_location{};
-         if (extract(line.m_line_content, "PNAM - Parent Location", m_parent_location) && get_formid(m_parent_location) == 0x0001a53a)
+         if (extract(line.m_line_content, "PNAM - Parent Location", m_parent_location) && get_formid(m_parent_location) == static_cast<formid>(0x0001a53a))
          {
             m_reject = false;
          }
@@ -101,13 +102,13 @@ namespace pp
    };
 
    struct star {
-      uint32_t m_formid;
+      formid m_formid;
       std::string m_name;
       float m_x{};
       float m_y{};
       float m_z{};
 
-      explicit star(const uint32_t formid)
+      explicit star(const formid formid)
          : m_formid(formid)
       {
       }
@@ -128,13 +129,13 @@ namespace pp
 
    struct planet_biome{
       float m_percentage{};
-      uint32_t m_biome_ref{};
-      uint32_t m_resource_gen_override{};
+      formid m_biome_ref{};
+      formid m_resource_gen_override{};
    };
 
    enum class body_type{unset, planet, moon};
    struct planet {
-      uint32_t m_formid{};
+      formid m_formid{};
       bool m_reject = true;
       list_item_detector m_list_item_detector;
 
@@ -146,7 +147,7 @@ namespace pp
       body_type m_body_type = body_type::unset;
       std::vector<planet_biome> m_biome_refs;
 
-      explicit planet(const uint32_t formid)
+      explicit planet(const formid formid)
          : m_formid(formid)
          , m_list_item_detector("PPBD - Biome #")
       {
@@ -199,12 +200,12 @@ namespace pp
 
 
    struct omod {
-      uint32_t m_formid;
+      formid m_formid;
       std::optional<std::string> m_name;
       std::vector<property> m_properties;
       list_item_detector m_property_builder;
 
-      explicit omod(const uint32_t formid)
+      explicit omod(const formid formid)
          : m_formid(formid)
          , m_property_builder("Property #")
       {
@@ -285,16 +286,16 @@ auto main() -> int
    using namespace pp;
    const auto t0 = std::chrono::steady_clock::now();
 
-   std::map<uint32_t, pp::lctn> star_locations;
-   std::map<uint32_t, pp::omod> omods;
-   std::map<uint32_t, pp::star> stars;
-   std::map<uint32_t, pp::planet> planets;
+   formid_map<pp::lctn> star_locations;
+   formid_map<pp::omod> omods;
+   formid_map<pp::star> stars;
+   formid_map<pp::planet> planets;
    std::vector<std::jthread> threads;
    threads.reserve(10);
-   threads.emplace_back(pp::run<pp::lctn>, "../data/xdump_lctn.txt", "LCTN", std::ref(star_locations));
-   threads.emplace_back(pp::run<pp::omod>, "../data/xdump_omod.txt", "OMOD", std::ref(omods));
-   threads.emplace_back(pp::run<pp::star>, "../data/xdump_stars.txt", "STDT", std::ref(stars));
-   threads.emplace_back(pp::run<pp::planet>, "../data/xdump_planets.txt", "PNDT", std::ref(planets));
+   threads.emplace_back(pp::run<pp::lctn>, "../../data/xdump_lctn.txt", "LCTN", std::ref(star_locations));
+   threads.emplace_back(pp::run<pp::omod>, "../../data/xdump_omod.txt", "OMOD", std::ref(omods));
+   threads.emplace_back(pp::run<pp::star>, "../../data/xdump_stars.txt", "STDT", std::ref(stars));
+   threads.emplace_back(pp::run<pp::planet>, "../../data/xdump_planets.txt", "PNDT", std::ref(planets));
    for (auto& thread : threads)
       thread.join();
    threads.clear();

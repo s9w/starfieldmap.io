@@ -23,7 +23,7 @@ auto pp::get_line_content(std::string&& line, const int line_number) -> line_con
 }
 
 
-auto pp::get_formid(const std::string& line) -> uint32_t
+auto pp::get_formid(const std::string& line) -> formid
 {
    const auto start = line.find('[') + 1;
    const auto end = line.find(']');
@@ -32,16 +32,16 @@ auto pp::get_formid(const std::string& line) -> uint32_t
 }
 
 
-auto pp::from_little(std::string_view str) -> uint32_t
+auto pp::from_little(std::string_view str) -> formid
 {
    if (str.starts_with("0x"))
    {
       str = str.substr(2);
    }
-   uint32_t result{};
+   formid result{};
    for (int i = 0; i < 4; ++i)
    {
-      const int part = std::stoi(std::string(str.substr(2 * i, 2)), nullptr, 16);
+      const formid part = static_cast<formid>(std::stoi(std::string(str.substr(2 * i, 2)), nullptr, 16));
       const auto shift_amount = i * 8;
       result |= part << shift_amount;
    }
@@ -50,16 +50,16 @@ auto pp::from_little(std::string_view str) -> uint32_t
 }
 
 
-auto pp::from_big(std::string_view str) -> uint32_t
+auto pp::from_big(std::string_view str) -> formid
 {
    if (str.starts_with("0x"))
    {
       str = str.substr(2);
    }
-   uint32_t result{};
+   formid result{};
    for (int i = 0; i < 4; ++i)
    {
-      const int part = std::stoi(std::string(str.substr(2 * i, 2)), nullptr, 16);
+      const formid part = static_cast<formid>(std::stoi(std::string(str.substr(2 * i, 2)), nullptr, 16));
       const auto shift_amount = (3 - i) * 8;
       result |= part << shift_amount;
    }
@@ -68,29 +68,29 @@ auto pp::from_big(std::string_view str) -> uint32_t
 }
 
 
-auto pp::as_little(const uint32_t data) -> std::string
+auto pp::as_little(const formid data) -> std::string
 {
    std::string result = "0x";
    result.reserve(2 + 4 * 2);
    for (int i = 0; i < 4; ++i)
    {
-      const uint32_t shift_amount = i * 8;
-      const uint32_t value = 0xff & (data >> shift_amount);
-      result += std::format("{:0>2x}", value);
+      const auto shift_amount = i * 8;
+      const formid value = static_cast<formid>(0xff) & (data >> shift_amount);
+      result += std::format("{:0>2x}", value.value_of());
    }
    return result;
 }
 
 
-auto pp::as_big(const uint32_t data) -> std::string
+auto pp::as_big(const formid data) -> std::string
 {
    std::string result = "0x";
    result.reserve(2 + 4 * 2);
    for (int i = 0; i < 4; ++i)
    {
-      const uint32_t shift_amount = (3 - i) * 8;
-      const uint32_t value = 0xff & (data >> shift_amount);
-      result += std::format("{:0>2x}", value);
+      const auto shift_amount = (3 - i) * 8;
+      const formid value = static_cast<formid>(0xff) & (data >> shift_amount);
+      result += std::format("{:0>2x}", value.value_of());
    }
    return result;
 }

@@ -4,12 +4,14 @@
 #include <string>
 #include <vector>
 
-#include "fundamentals.h"
+#include <cppp/fundamentals.h>
 
+#include <cppp/strong_type/strong_type.hpp>
 
 
 namespace pp
 {
+   using formid = strong::type<uint32_t, struct my_formid, strong::regular, strong::bitarithmetic, strong::ordered >;
    auto get_indentation_level(const std::string& line) -> int;
 
    struct line_content {
@@ -19,7 +21,7 @@ namespace pp
    };
 
    auto get_line_content(std::string&& line, const int line_number) -> line_content;
-   auto get_formid(const std::string& line) -> uint32_t;
+   auto get_formid(const std::string& line) -> formid;
 
    template<typename T>
    auto extract(
@@ -48,7 +50,7 @@ namespace pp
       {
          target = std::stoi(value_substr);
       }
-      else if constexpr (is_T_or_opt_T<T, uint32_t>)
+      else if constexpr (is_T_or_opt_T<T, formid>)
       {
          target = get_formid(value_substr);
       }
@@ -104,10 +106,10 @@ namespace pp
    };
    
 
-   auto from_little(std::string_view str) -> uint32_t;
-   auto from_big(std::string_view str) -> uint32_t;
-   auto as_little(const uint32_t data) -> std::string;
-   auto as_big(const uint32_t data) -> std::string;
+   auto from_little(std::string_view str) -> formid;
+   auto from_big(std::string_view str) -> formid;
+   auto as_little(const formid data) -> std::string;
+   auto as_big(const formid data) -> std::string;
 }
 
 
