@@ -208,6 +208,7 @@ namespace pp
       list_item_detector m_biome_detector;
       list_item_detector m_animal_detector;
       list_item_detector m_flora_detector;
+      list_item_detector m_atmosphere_detector;
 
       std::string m_name;
       float m_gravity;
@@ -219,12 +220,14 @@ namespace pp
       std::vector<planet_biome> m_biome_refs;
       std::vector<animal> m_animal_refs;
       std::vector<plant> m_flora_refs;
+      std::vector<float> m_oxygen_amount;
 
       explicit pndt(const formid formid)
          : m_formid(formid)
          , m_biome_detector("PPBD - Biome #")
          , m_animal_detector("Fauna #")
          , m_flora_detector("Flora #")
+         , m_atmosphere_detector("Keyword #")
       {
 
       }
@@ -252,8 +255,8 @@ namespace pp
          m_biome_detector.process_line(line, m_biome_refs, biome_generator);
 
          const auto animal_generator = [](const std::vector<std::string_view>& lines) -> std::optional<animal> {
-            pp_assert(lines.size() == 1);
-            return animal{.m_formid = get_formid(lines[0])};
+            pp_assert(lines.size() == 2);
+            return animal{.m_formid = get_formid(lines[1])};
             };
          m_animal_detector.process_line(line, m_animal_refs, animal_generator);
 
@@ -270,6 +273,24 @@ namespace pp
             return result;
             };
          m_flora_detector.process_line(line, m_flora_refs, flora_generator);
+
+         if (line.m_line_number == 531)
+            int stop = 0;
+
+         const auto keyword_generator = [](const std::vector<std::string_view>& lines) -> std::optional<float> {
+            if (lines.size() == 1)
+            {
+               if (lines[0].find("PlanetAtmosphereType07LowO2") != std::string::npos)
+                  return 18.0f;
+               if (lines[0].find("PlanetAtmosphereType05O2") != std::string::npos)
+                  return 21.0f;
+               if (lines[0].find("PlanetAtmosphereType06HighO2") != std::string::npos)
+                  return 24.0f;
+            }
+
+            return std::nullopt;
+            };
+         m_atmosphere_detector.process_line(line, m_oxygen_amount, keyword_generator);
 
          std::string body_type_str;
          if(extract(line.m_line_content, "CNAM - Body type", body_type_str))
@@ -382,7 +403,7 @@ namespace pp
       float m_gravity{};
       std::vector<animal> m_fauna;
       std::vector<plant> m_flora;
-      
+      float m_oxygen_amount{};
    };
    struct planet : body {
       std::vector<body> m_moons;
@@ -398,6 +419,13 @@ namespace pp
       std::vector<planet> m_planets;
    };
 
+
+   auto get_oxygen_amount(const std::vector<float>& vec) -> float
+   {
+      if (vec.empty()) return 0.0f;
+      pp_assert(vec.size() == 1);
+      return vec[0];
+   }
 
    auto build_universe(
       const formid_map<pp::lctn>& lctns,
@@ -430,19 +458,24 @@ namespace pp
       constexpr auto moons = std::views::filter([](const pndt& el) {return el.m_body_type == body_type::moon; });
       constexpr auto planets = std::views::filter([](const pndt& el) {return el.m_body_type == body_type::planet; });
 
+      auto get_body = [](const pndt& value){
+         return body{
+            .m_name = value.m_name,
+            .m_temperature = value.m_temperature,
+            .m_gravity = value.m_gravity,
+            .m_fauna = value.m_animal_refs,
+            .m_flora = value.m_flora_refs,
+            .m_oxygen_amount = get_oxygen_amount(value.m_oxygen_amount)
+         };
+      };
+
       // Prep planets
       std::unordered_map<int, std::vector<planet>> planets_by_starid;
       for (const auto& value : pndts | std::views::values | planets)
       {
          planets_by_starid[value.m_star_id].emplace_back(
             planet{
-               body{
-                  .m_name = value.m_name,
-                  .m_temperature = value.m_temperature,
-                  .m_gravity = value.m_gravity,
-                  .m_fauna = value.m_animal_refs,
-                  .m_flora = value.m_flora_refs
-               },
+               get_body(value),
                {},
                value.m_planet_id
             }
@@ -459,13 +492,7 @@ namespace pp
             if (planet.m_planet_id != value.m_primary_planet_id)
                continue;
             planet.m_moons.push_back(
-               body{
-                  .m_name = value.m_name,
-                  .m_temperature = value.m_temperature,
-                  .m_gravity = value.m_gravity,
-                  .m_fauna = value.m_animal_refs,
-                  .m_flora = value.m_flora_refs
-               }
+               get_body(value)
             );
          }
       }

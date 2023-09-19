@@ -103,6 +103,7 @@ namespace pp{
                m_next_property_strings.clear();
             }
             m_in_property_level.emplace(line.m_level);
+            m_next_property_strings.push_back(line.m_line_content);
          }
 
          // prop is active
