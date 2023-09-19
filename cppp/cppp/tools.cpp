@@ -78,7 +78,7 @@ auto pp::from_big(std::string_view str) -> formid
 
 auto pp::as_little(const formid data) -> std::string
 {
-   std::string result = "0x";
+   std::string result = "";
    result.reserve(2 + 4 * 2);
    for (int i = 0; i < 4; ++i)
    {
@@ -92,7 +92,7 @@ auto pp::as_little(const formid data) -> std::string
 
 auto pp::as_big(const formid data) -> std::string
 {
-   std::string result = "0x";
+   std::string result = "";
    result.reserve(2 + 4 * 2);
    for (int i = 0; i < 4; ++i)
    {

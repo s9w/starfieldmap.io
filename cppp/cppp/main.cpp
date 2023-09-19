@@ -398,6 +398,7 @@ namespace pp
    };
 
    struct body {
+      formid m_formid;
       std::string m_name;
       float m_temperature{};
       float m_gravity{};
@@ -411,6 +412,7 @@ namespace pp
    };
 
    struct star {
+      formid m_formid;
       float m_x{};
       float m_y{};
       float m_z{};
@@ -446,6 +448,7 @@ namespace pp
          starid_to_star.emplace(
             value.m_star_id,
             star{
+               .m_formid = value.m_formid,
                .m_x = value.m_x,
                .m_y = value.m_y,
                .m_z = value.m_z,
@@ -460,6 +463,7 @@ namespace pp
 
       auto get_body = [](const pndt& value){
          return body{
+            .m_formid = value.m_formid,
             .m_name = value.m_name,
             .m_temperature = value.m_temperature,
             .m_gravity = value.m_gravity,
@@ -511,7 +515,7 @@ namespace pp
    {
       const std::string indentation_str = std::string(indentation, ' ');
 
-      str += std::format("{}{}, {}C, {}g, {}% O2, flora: {}, fauna: {} \n", indentation_str, b.m_name, b.m_temperature, b.m_gravity, b.m_oxygen_amount, b.m_flora.size(), b.m_fauna.size());
+      str += std::format("{}{} ({}), {}C, {}g, {}% O2, flora: {}, fauna: {} \n", indentation_str, b.m_name, as_big(b.m_formid), b.m_temperature, b.m_gravity, b.m_oxygen_amount, b.m_flora.size(), b.m_fauna.size());
    }
 
    auto print(std::string& str, const planet& p, const int indentation) -> void
@@ -530,7 +534,7 @@ namespace pp
 
    auto print(std::string& str, const star& s, const int indentation) -> void
    {
-      str += std::format("{}\n", s.m_name);
+      str += std::format("{} system ({})\n", s.m_name, as_big(s.m_formid));
       for (const auto& p : s.m_planets)
       {
          print(str, p, indentation+2);
