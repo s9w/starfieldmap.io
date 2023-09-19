@@ -7,3 +7,4 @@ S:\SteamLibrary\steamapps\common\Starfield\xDump.exe -SF1 -dg:FLOR -xr:TNAM,PCCC
 S:\SteamLibrary\steamapps\common\Starfield\xDump.exe -SF1 -dg:WEAP -xr:TNAM,PCCC S:\SteamLibrary\steamapps\common\Starfield\Data\starfield.esm > xdump_weapons.txt
 S:\SteamLibrary\steamapps\common\Starfield\xDump.exe -SF1 -dg:OMOD -xr:TNAM,PCCC S:\SteamLibrary\steamapps\common\Starfield\Data\starfield.esm > xdump_omod.txt
 S:\SteamLibrary\steamapps\common\Starfield\xDump.exe -SF1 -dg:LCTN -xr:TNAM,PCCC S:\SteamLibrary\steamapps\common\Starfield\Data\starfield.esm > xdump_lctn.txt
+S:\SteamLibrary\steamapps\common\Starfield\xDump.exe -SF1 -dg:NPC_ -xr:TNAM,PCCC S:\SteamLibrary\steamapps\common\Starfield\Data\starfield.esm > xdump_npc.txt

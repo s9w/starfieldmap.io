@@ -108,6 +108,8 @@ namespace pp
       float m_mult;
       float m_add;
       float m_step;
+
+      friend bool operator==(property const& lhs, property const& rhs) = default;
    };
 
 
@@ -179,12 +181,26 @@ namespace pp
       formid m_biome_ref{};
       formid m_resource_gen_override{};
    };
+   auto operator==(const planet_biome& a, const planet_biome& b) -> bool
+   {
+      return a.m_biome_ref == b.m_biome_ref;
+   }
+
+   struct animal{
+      formid m_formid;
+      
+   };
+   auto operator==(const animal& a, const animal& b) -> bool
+   {
+      return a.m_formid == b.m_formid;
+   }
 
    enum class body_type{unset, planet, moon};
    struct pndt {
       formid m_formid{};
       bool m_reject = true;
-      list_item_detector m_list_item_detector;
+      list_item_detector m_biome_detector;
+      list_item_detector m_animal_detector;
 
       std::string m_name;
       float m_temperature{};
@@ -193,10 +209,12 @@ namespace pp
       int m_primary_planet_id{};
       body_type m_body_type = body_type::unset;
       std::vector<planet_biome> m_biome_refs;
+      std::vector<animal> m_animal_refs;
 
       explicit pndt(const formid formid)
          : m_formid(formid)
-         , m_list_item_detector("PPBD - Biome #")
+         , m_biome_detector("PPBD - Biome #")
+         , m_animal_detector("Fauna #")
       {
 
       }
@@ -220,7 +238,12 @@ namespace pp
             }
             return biome;
          };
-         m_list_item_detector.process_line(line, m_biome_refs, biome_generator);
+         m_biome_detector.process_line(line, m_biome_refs, biome_generator);
+         const auto animal_generator = [](const std::vector<std::string_view>& lines) -> std::optional<animal> {
+            pp_assert(lines.size() == 1);
+            return animal{.m_formid = get_formid(lines[0])};
+            };
+         m_animal_detector.process_line(line, m_animal_refs, animal_generator);
 
          std::string body_type_str;
          if(extract(line.m_line_content, "CNAM - Body type", body_type_str))
@@ -329,12 +352,14 @@ namespace pp
 
    struct moon{
       std::string m_name;
+      std::vector<animal> m_fauna;
       float m_temperature{};
    };
 
    struct planet{
       std::string m_name;
       float m_temperature{};
+      std::vector<animal> m_fauna;
       std::vector<moon> m_moons;
       int m_planet_id{};
    };
@@ -387,6 +412,7 @@ namespace pp
             planet{
                .m_name = value.m_name,
                .m_temperature = value.m_temperature,
+               .m_fauna = value.m_animal_refs,
                .m_planet_id = value.m_planet_id
             }
          );
@@ -405,6 +431,7 @@ namespace pp
             planet.m_moons.push_back(
                moon{
                   .m_name = value.m_name,
+                  .m_fauna = value.m_animal_refs,
                   .m_temperature = value.m_temperature
                }
             );
@@ -445,8 +472,9 @@ auto main() -> int
    timer.emplace();
 
    const auto universe = build_universe(lctns, stdts, pndts);
+   [[maybe_unused]] const auto& narion = universe.at(88327);
    timer.reset();
 
-   int end = 0;
+   [[maybe_unused]] int end = 0;
 }
 

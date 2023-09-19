@@ -78,6 +78,7 @@ namespace pp{
       return true;
    }
 
+   struct animal;
    struct list_item_detector {
       std::optional<int> m_in_property_level;
       std::vector<std::string_view> m_next_property_strings;
@@ -95,8 +96,10 @@ namespace pp{
          {
             if (m_next_property_strings.empty() == false)
             {
+               // if constexpr (std::same_as<T, pp::animal>)
+               //    int stop = 0;
                const auto result = m_lambda(m_next_property_strings);
-               if(result.has_value())
+               if(result.has_value() && std::ranges::find(target, *result) == std::cend(target))
                   target.emplace_back(*result);
 
                m_next_property_strings.clear();
@@ -111,13 +114,19 @@ namespace pp{
             {
                // end of this property because property list ends
                const auto result = m_lambda(m_next_property_strings);
-               if (result.has_value())
+               if (result.has_value() && std::ranges::find(target, *result) == std::cend(target))
                   target.emplace_back(*result);
 
                m_in_property_level.reset();
                m_next_property_strings.clear();
             }
-            m_next_property_strings.push_back(line.m_line_content);
+            else
+            {
+               // if constexpr (std::same_as<T, pp::animal>)
+               //    int stop = 0;
+               m_next_property_strings.push_back(line.m_line_content);
+            }
+            // TODO check if this was not in else
          }
       }
    };
