@@ -96,8 +96,6 @@ namespace pp{
          {
             if (m_next_property_strings.empty() == false)
             {
-               // if constexpr (std::same_as<T, pp::animal>)
-               //    int stop = 0;
                const auto result = m_lambda(m_next_property_strings);
                if(result.has_value() && std::ranges::find(target, *result) == std::cend(target))
                   target.emplace_back(*result);
@@ -122,11 +120,8 @@ namespace pp{
             }
             else
             {
-               // if constexpr (std::same_as<T, pp::animal>)
-               //    int stop = 0;
                m_next_property_strings.push_back(line.m_line_content);
             }
-            // TODO check if this was not in else
          }
       }
    };

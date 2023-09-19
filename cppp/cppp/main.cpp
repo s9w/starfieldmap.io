@@ -203,6 +203,7 @@ namespace pp
       list_item_detector m_animal_detector;
 
       std::string m_name;
+      float m_gravity;
       float m_temperature{};
       int m_star_id{};
       int m_planet_id{};
@@ -227,6 +228,7 @@ namespace pp
          extract(line.m_line_content, "Star ID", m_star_id);
          extract(line.m_line_content, "Planet ID", m_planet_id);
          extract(line.m_line_content, "Primary planet ID", m_primary_planet_id);
+         extract(line.m_line_content, "Gravity", m_gravity);
 
          const auto biome_generator = [](const std::vector<std::string_view>& lines) -> std::optional<planet_biome> {
             planet_biome biome;
@@ -354,11 +356,13 @@ namespace pp
       std::string m_name;
       std::vector<animal> m_fauna;
       float m_temperature{};
+      float m_gravity{};
    };
 
    struct planet{
       std::string m_name;
       float m_temperature{};
+      float m_gravity{};
       std::vector<animal> m_fauna;
       std::vector<moon> m_moons;
       int m_planet_id{};
@@ -412,6 +416,7 @@ namespace pp
             planet{
                .m_name = value.m_name,
                .m_temperature = value.m_temperature,
+               .m_gravity = value.m_gravity,
                .m_fauna = value.m_animal_refs,
                .m_planet_id = value.m_planet_id
             }
@@ -432,7 +437,8 @@ namespace pp
                moon{
                   .m_name = value.m_name,
                   .m_fauna = value.m_animal_refs,
-                  .m_temperature = value.m_temperature
+                  .m_temperature = value.m_temperature,
+                  .m_gravity = value.m_gravity
                }
             );
          }
@@ -471,7 +477,7 @@ auto main() -> int
    threads.clear();
    timer.emplace();
 
-   const auto universe = build_universe(lctns, stdts, pndts);
+   const std::unordered_map<int, star> universe = build_universe(lctns, stdts, pndts);
    [[maybe_unused]] const auto& narion = universe.at(88327);
    timer.reset();
 
