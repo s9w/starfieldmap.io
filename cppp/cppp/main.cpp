@@ -555,61 +555,6 @@ namespace pp
       return starid_to_star;
    }
 
-
-   constexpr int indent_size = 4;
-   auto print(std::string& str, const body& b, const int indentation) -> void
-   {
-      const std::string indentation_str = std::string(indentation, ' ');
-
-      std::string biome_str;
-      for(const auto& bi : b.m_biomes)
-      {
-         const bool first = biome_str.empty();
-         if (first == false)
-            biome_str += ", ";
-         biome_str += std::format("{}% {}", bi.m_percentage, bi.m_name);
-      }
-
-      str += std::format(
-         "{}{} ({}), {}C, {}g, {}% O2, flora: {}, fauna: {}; {} traits; {}\n",
-         indentation_str, b.m_name, as_big(b.m_formid), b.m_temperature, b.m_gravity, b.m_oxygen_amount, b.m_flora.size(), b.m_fauna_count, b.m_traits.size(), biome_str
-      );
-   }
-
-   auto print(std::string& str, const planet& p, const int indentation) -> void
-   {
-      const body base = static_cast<body>(p);
-      print(str, base, indentation);
-      const std::string indentation_str = std::string(indentation, ' ');
-      if(p.m_moons.empty() == false)
-      {
-         for(const auto& m : p.m_moons)
-         {
-            print(str, m, indentation + indent_size);
-         }
-      }
-   }
-
-   auto print(std::string& str, const star& s, const int indentation) -> void
-   {
-      str += std::format("{} system (Level {}; {})\n", s.m_name, s.m_level, as_big(s.m_formid));
-      for (const auto& p : s.m_planets)
-      {
-         print(str, p, indentation + indent_size);
-      }
-   }
-
-   auto print(const std::unordered_map<int, star>& universe)
-   {
-      std::string str;
-      for (const auto& star : universe | std::views::values)
-      {
-         print(str, star, 0);
-      }
-      std::ofstream file("out.txt");
-      file << str;
-   }
-
    void to_json(nlohmann::json& j, const formid& p) {
       j = as_big(p);
    }
@@ -628,18 +573,7 @@ namespace pp
       j["gravity"] = p.m_gravity;
       j["traits"] = p.m_traits;
    }
-   void to_json(nlohmann::json& j, const planet& p) {
-      j["name"] = p.m_name;
-      j["biomes"] = p.m_biomes;
-      j["fauna_count"] = p.m_fauna_count;
-      j["flora"] = p.m_flora;
-      j["formid"] = as_big(p.m_formid);
-      j["oxygen_amount"] = p.m_oxygen_amount;
-      j["temperature"] = p.m_temperature;
-      j["gravity"] = p.m_gravity;
-      j["traits"] = p.m_traits;
-      j["moons"] = p.m_moons;
-   }
+   // }
    void to_json(nlohmann::json& j, const star& p) {
       j["x"] = p.m_x;
       j["y"] = p.m_y;
@@ -676,10 +610,7 @@ auto main() -> int
    threads.clear();
    timer.emplace();
 
-   
-
    const std::unordered_map<int, star> universe = build_universe(lctns, stdts, pndts, bioms);
-   // print(universe);
 
 
    [[maybe_unused]] const auto& narion = universe.at(88327);
@@ -689,15 +620,35 @@ auto main() -> int
    nlohmann::json shift_data = nlohmann::json::parse(f);
 
    nlohmann::json template_data;
-   template_data["systems"] = std::vector<star>();
+   inja::Environment env;
+   template_data["systems"] = nlohmann::json{};
    for (const auto& star : universe | std::views::values)
    {
-      template_data["systems"].push_back(star);
-   }
-   // std::ofstream o("template_data.json");
-   // o << std::setw(4) << template_data << std::endl;
+      nlohmann::json system;
+      system["name"] = star.m_name;
+      system["level"] = star.m_level;
+      system["formid"] = star.m_formid;
+      system["planets"] = nlohmann::json::array();
+      for(const auto& planet : star.m_planets)
+      {
+         nlohmann::json body_template_data = static_cast<body>(planet);
+         body_template_data["class"] = "planet";
+         nlohmann::json planet_json{};
+         planet_json["planet_str"] = env.render_file("body_template.html", body_template_data);
 
-   inja::Environment env;
+         planet_json["moons_strings"] = nlohmann::json::array();
+         for(const auto& moon : planet.m_moons)
+         {
+            nlohmann::json moon_template_data = moon;
+            moon_template_data["class"] = "moon";
+            planet_json["moons_strings"].push_back(env.render_file("body_template.html", moon_template_data));
+         }
+         system["planets"].push_back(planet_json);
+      }
+      template_data["systems"].push_back(system);
+   }
+
+   
    const auto html_str = env.render_file("list_template.html", template_data);
    std::ofstream out("../../web/list/index.html");
    out << html_str;

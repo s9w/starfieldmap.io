@@ -14,75 +14,13 @@
                 
                 <div class="planets">
                     {% for planet in system.planets %}
-                    <div data-name="{{ planet.name }}" class=planet>
-                        <div class="name">{{ planet.name }} ({{planet.formid}})</div>
-                        <div class="quickfacts">{{ planet.temperature }}°C; {{ planet.gravity }}g; {{ planet.oxygen_amount }}% O₂</div>
-                        <div class="fauna_count">{{ planet.fauna_count }} Fauna</div>
-                        
-                        <div class="floras">
-                        {% if planet.flora %}
-                            <div>Floras:</div>
-                            {% for flora in planet.flora %}
-                                <div class="flora">
-                                    <div class="flora_name">{{ flora }}</div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <div>No Floras</div>
-                        {% endif %}
-                        </div>
-
-                        <div class="biomes">
-                        {% if planet.biomes %}
-                            <div>Biomes:</div>
-                            {% for biome in planet.biomes %}
-                                <div class="biome">
-                                    <div>{{ biome.percentage }}% {{biome.name}}</div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <div>No Biomes</div>
-                        {% endif %}
-                        </div>
+                        {{planet.planet_str}}
 
                         <div class="moons">
-                            {% for moon in planet.moons %}
-                            <div data-name="{{ moon.name }}" class=moon>
-                                <div class="name">{{ moon.name }} ({{moon.formid}})</div>
-                                <div class="quickfacts">{{ moon.temperature }}°C; {{ moon.gravity }}g; {{ moon.oxygen_amount }}% O₂</div>
-                                <div class="fauna_count">{{ moon.fauna_count }} Fauna</div>
-
-                                <div class="floras">
-                                {% if moon.flora %}
-                                    <div>Floras:</div>
-                                    {% for flora in moon.flora %}
-                                        <div class="flora">
-                                            <div class="flora_name">{{ flora }}</div>
-                                        </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <div>No Floras</div>
-                                {% endif %}
-                                </div>
-
-                                <div class="biomes">
-                                {% if moon.biomes %}
-                                    <div>Biomes:</div>
-                                    {% for biome in moon.biomes %}
-                                        <div class="biome">
-                                            <div>{{ biome.percentage }}% {{biome.name}}</div>
-                                        </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <div>No Biomes</div>
-                                {% endif %}
-                                </div>
-
-                            </div>
-                            {% endfor %}
+                        {% for moon_str in planet.moons_strings %}
+                            {{moon_str}}
+                        {% endfor %}
                         </div>
-
-                    </div>
                     {% endfor %}
 
                 </div>

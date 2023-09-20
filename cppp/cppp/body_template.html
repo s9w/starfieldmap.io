@@ -1,0 +1,43 @@
+<div data-name="{{ name }}" class={{class}}>
+    <div class="name">{{ name }} ({{formid}})</div>
+    <div class="quickfacts">{{ temperature }}°C; {{ gravity }}g; {{ oxygen_amount }}% O₂</div>
+    <div class="fauna_count">{{ fauna_count }} Fauna</div>
+
+    <div class="floras">
+    {% if flora %}
+        <div>Floras:</div>
+        {% for flora in flora %}
+            <div class="flora">
+                <div class="flora_name">{{ flora }}</div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div>No Floras</div>
+    {% endif %}
+    </div>
+
+    <div class="biomes">
+    {% if biomes %}
+        <div>Biomes:</div>
+        {% for biome in biomes %}
+            <div class="biome">
+                <div>{{ biome.percentage }}% {{biome.name}}</div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div>No Biomes</div>
+    {% endif %}
+    </div>
+
+    <div class="traits">
+    {% if traits %}
+        <div>Traits:</div>
+        {% for trait in traits %}
+            <div class="trait">{{ trait }}</div>
+        {% endfor %}
+    {% else %}
+        <div>No Traits</div>
+    {% endif %}
+    </div>
+
+</div>
