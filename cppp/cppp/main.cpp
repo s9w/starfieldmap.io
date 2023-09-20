@@ -162,7 +162,26 @@ namespace pp
       }
    };
 
-   
+
+   struct flor {
+      formid m_formid;
+      std::string m_name;
+
+      explicit flor(const formid formid)
+         : m_formid(formid)
+      {
+
+      }
+      auto process_line(const line_content& line) -> void
+      {
+         extract(line.m_line_content, "FULL - Name", m_name);
+      }
+
+      [[nodiscard]] auto reject() const -> bool
+      {
+         return false;
+      }
+   };
 
    struct stdt {
       formid m_formid;
@@ -225,7 +244,7 @@ namespace pp
       body_type m_body_type = body_type::unset;
       std::vector<planet_biome_ref> m_biome_refs;
       std::vector<formid> m_animals{};
-      std::vector<std::string> m_plants;
+      std::vector<formid> m_plants;
       int m_oxygen_amount{};
       std::vector<std::string> m_traits;
 
@@ -277,7 +296,7 @@ namespace pp
             {
                if(extract(l, "Model", buffer))
                {
-                  const std::string result(get_between(l, '\"', '\"'));
+                  const auto result = get_formid(l);
                   if (std::ranges::find(target, result) == std::cend(target))
                      target.emplace_back(result);
                }
@@ -420,6 +439,12 @@ namespace pp
    struct biome{
       float m_percentage{};
       std::string m_name;
+      formid m_formid;
+   };
+
+   struct flora{
+      std::string m_name;
+      formid m_formid;
    };
 
    struct body {
@@ -428,7 +453,7 @@ namespace pp
       float m_temperature{};
       std::string m_gravity{};
       int m_fauna_count{};
-      std::vector<std::string> m_flora;
+      std::vector<flora> m_flora;
       int m_oxygen_amount{};
       std::vector<biome> m_biomes;
       std::vector<std::string> m_traits;
@@ -457,7 +482,8 @@ namespace pp
          result.push_back(
             biome{
                .m_percentage = ref.m_percentage,
-               .m_name = bioms.at(ref.m_biome_ref).m_name
+               .m_name = bioms.at(ref.m_biome_ref).m_name,
+               .m_formid = ref.m_biome_ref
             }
          );
       }
@@ -471,11 +497,29 @@ namespace pp
       return result;
    }
 
+   auto get_plants(const std::vector<formid>& refs, const formid_map<pp::flor>& flors) -> std::vector<flora>
+   {
+      std::vector<flora> result;
+      result.reserve(refs.size());
+      for (const auto& ref : refs)
+      {
+         result.push_back(
+            flora{
+               .m_name = flors.at(ref).m_name,
+               .m_formid = ref
+            }
+         );
+      }
+
+      return result;
+   }
+
    auto build_universe(
       const formid_map<pp::lctn>& lctns,
       const formid_map<pp::stdt>& stdts,
       const formid_map<pp::pndt>& pndts,
-      const formid_map<pp::biom>& bioms
+      const formid_map<pp::biom>& bioms,
+      const formid_map<pp::flor>& flors
    ) -> std::unordered_map<int, star>
    {
       // Combine star-LCTN and STDT
@@ -511,7 +555,7 @@ namespace pp
             .m_temperature = value.m_temperature,
             .m_gravity = std::format("{:.2f}", value.m_gravity),
             .m_fauna_count = static_cast<int>(value.m_animals.size()),
-            .m_flora = value.m_plants,
+            .m_flora = get_plants(value.m_plants, flors),
             .m_oxygen_amount = value.m_oxygen_amount,
             .m_biomes = get_biomes(value.m_biome_refs, bioms),
             .m_traits = value.m_traits
@@ -561,6 +605,11 @@ namespace pp
    void to_json(nlohmann::json& j, const biome& p) {
       j["percentage"] = p.m_percentage;
       j["name"] = p.m_name;
+      j["formid"] = as_big(p.m_formid);
+   }
+   void to_json(nlohmann::json& j, const flora& p) {
+      j["name"] = p.m_name;
+      j["formid"] = as_big(p.m_formid);
    }
    void to_json(nlohmann::json& j, const body& p) {
       j["name"] = p.m_name;
@@ -600,6 +649,7 @@ auto main() -> int
    formid_map<pp::stdt> stdts;
    formid_map<pp::pndt> pndts;
    formid_map<pp::biom> bioms;
+   formid_map<pp::flor> flors;
    std::vector<std::jthread> threads;
    threads.reserve(10);
    threads.emplace_back(pp::run<pp::lctn>, "../../data/xdump_lctn.txt", "LCTN", std::ref(lctns));
@@ -607,10 +657,11 @@ auto main() -> int
    threads.emplace_back(pp::run<pp::pndt>, "../../data/xdump_planets.txt", "PNDT", std::ref(pndts));
    threads.emplace_back(pp::run<pp::omod>, "../../data/xdump_omod.txt", "OMOD", std::ref(omods));
    threads.emplace_back(pp::run<pp::biom>, "../../data/xdump_biomes.txt", "BIOM", std::ref(bioms));
+   threads.emplace_back(pp::run<pp::flor>, "../../data/xdump_flora.txt", "FLOR", std::ref(flors));
    threads.clear();
    timer.emplace();
 
-   const std::unordered_map<int, star> universe = build_universe(lctns, stdts, pndts, bioms);
+   const std::unordered_map<int, star> universe = build_universe(lctns, stdts, pndts, bioms, flors);
 
 
    [[maybe_unused]] const auto& narion = universe.at(88327);

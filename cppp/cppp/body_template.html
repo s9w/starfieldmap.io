@@ -8,7 +8,7 @@
         <div>Floras:</div>
         {% for flora in flora %}
             <div class="flora">
-                <div class="flora_name">{{ flora }}</div>
+                <div class="flora_name">{{ flora.name }} ({{flora.formid}})</div>
             </div>
         {% endfor %}
     {% else %}
@@ -21,7 +21,7 @@
         <div>Biomes:</div>
         {% for biome in biomes %}
             <div class="biome">
-                <div>{{ biome.percentage }}% {{biome.name}}</div>
+                <div>{{ biome.percentage }}% {{biome.name}} ({{biome.formid}})</div>
             </div>
         {% endfor %}
     {% else %}
