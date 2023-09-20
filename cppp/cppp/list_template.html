@@ -8,25 +8,54 @@
 	</head>
 	<body>
         <div id="systems">
-            {% for system in systems %}
-            <div id="{{ system.name }}" class=system>
-                <div class="name">{{ system.name }} system ({{system.formid}})</div>
-                <div>Level {{system.level}}; {{system.planet_count}} planets, {{system.moon_count}} moons</div>
-                
-                <div class="planets">
-                    {% for planet in system.planets %}
-                        {{planet.planet_str}}
-
-                        <div class="moons">
-                        {% for moon_str in planet.moons_strings %}
-                            {{moon_str}}
-                        {% endfor %}
+            {% for body in bodies %}
+            <div id="{{ body.name }}" data-type={{body.class}} class="{{body.class}}">
+                <div class="nav">
+                {% for nav_item in body.nav %}
+                    <div>{{nav_item}}</div>
+                {% endfor %}
+                    <div class="debug">({{body.formid}})</div>
+                </div>
+                <div class="quickfacts">{{ body.temperature }}°C; {{ body.gravity }}g; {{ body.oxygen_amount }}% O₂</div>
+                <div class="fauna_count">{{ body.fauna_count }} Fauna</div>
+            
+                <div class="floras">
+                {% if body.flora %}
+                    <div>Floras:</div>
+                    {% for flora in body.flora %}
+                        <div class="flora">
+                            <div class="flora_name">{{loop.index+1}}. {{flora.name}} ({{flora.formid}})</div>
                         </div>
                     {% endfor %}
-
+                {% else %}
+                    <div>No Floras</div>
+                {% endif %}
+                </div>
+            
+                <div class="biomes">
+                {% if body.biomes %}
+                    <div>Biomes:</div>
+                    {% for biome in body.biomes %}
+                        <div class="biome">
+                            <div>{{ biome.percentage }}% {{biome.name}} ({{biome.formid}})</div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div>No Biomes</div>
+                {% endif %}
+                </div>
+            
+                <div class="traits">
+                {% if body.traits %}
+                    <div>Traits:</div>
+                    {% for trait in body.traits %}
+                        <div class="trait">{{ trait }}</div>
+                    {% endfor %}
+                {% else %}
+                    <div>No Traits</div>
+                {% endif %}
                 </div>
             </div>
-            
             {% endfor %}
         </div>
 	</body>

@@ -672,28 +672,32 @@ auto main() -> int
 
    nlohmann::json template_data;
    inja::Environment env;
-   template_data["systems"] = nlohmann::json{};
+   template_data["bodies"] = nlohmann::json::array();
    for (const auto& star : universe | std::views::values)
    {
-      nlohmann::json system(star);
-      system["planets"] = nlohmann::json::array();
       for(const auto& planet : star.m_planets)
       {
-         nlohmann::json body_template_data = static_cast<body>(planet);
-         body_template_data["class"] = "planet";
-         nlohmann::json planet_json{};
-         planet_json["planet_str"] = env.render_file("body_template.html", body_template_data);
+         nlohmann::json planet_template_data = static_cast<body>(planet);
+         planet_template_data["class"] = "planet";
 
-         planet_json["moons_strings"] = nlohmann::json::array();
+         planet_template_data["nav"] = nlohmann::json::array();
+         planet_template_data["nav"].emplace_back(std::format("{} system", star.m_name));
+         planet_template_data["nav"].emplace_back(planet.m_name);
+
+         template_data["bodies"].push_back(planet_template_data);
          for(const auto& moon : planet.m_moons)
          {
-            nlohmann::json moon_template_data = moon;
+            nlohmann::json moon_template_data = static_cast<body>(moon);
             moon_template_data["class"] = "moon";
-            planet_json["moons_strings"].push_back(env.render_file("body_template.html", moon_template_data));
+
+            moon_template_data["nav"] = nlohmann::json::array();
+            moon_template_data["nav"].emplace_back(std::format("{} system", star.m_name));
+            moon_template_data["nav"].emplace_back(planet.m_name);
+            moon_template_data["nav"].emplace_back(moon.m_name);
+
+            template_data["bodies"].push_back(moon_template_data);
          }
-         system["planets"].push_back(planet_json);
       }
-      template_data["systems"].push_back(system);
    }
 
    
