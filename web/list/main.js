@@ -1,3 +1,10 @@
+function expand()
+{
+    let els = document.getElementById("bodies").children;
+    for (let i = 0; i < els.length; i++)
+        els[i].open = true;
+}
+
 function notify(event) {
     let search_term = event.target.value.toLowerCase();
     let els = document.getElementById("bodies").children;
