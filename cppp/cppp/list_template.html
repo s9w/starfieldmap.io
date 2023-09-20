@@ -16,8 +16,11 @@
                 {% endfor %}
                     <div class="debug">({{body.formid}})</div>
                 </div>
-                <div class="quickfacts">{{ body.temperature }}°C; {{ body.gravity }}g; {{ body.oxygen_amount }}% O₂</div>
-                <div class="fauna_count">{{ body.fauna_count }} Fauna</div>
+                <div class="quickfacts">
+                    <span class="temperature" data-temp_lvl={{body.temp_level}}>{{body.temperature}}°C</span>
+                    <span>{{ body.gravity }}g; {{ body.oxygen_amount }}% O₂</span>
+                </div>
+                <div class="fauna_count">{{body.fauna_count}} Fauna</div>
             
                 <div class="floras">
                 {% if body.flora %}
@@ -49,7 +52,10 @@
                 {% if body.traits %}
                     <div>Traits:</div>
                     {% for trait in body.traits %}
-                        <div class="trait">{{ trait }}</div>
+                    <div class="trait">
+                        <img class="trait_img" src="traits/{{trait}}.png">
+                        <div >{{ trait }}</div>
+                    </div>
                     {% endfor %}
                 {% else %}
                     <div>No Traits</div>

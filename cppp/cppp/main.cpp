@@ -234,10 +234,12 @@ namespace pp
       list_item_detector m_flora_detector;
       list_item_detector m_atmosphere_detector;
       list_item_detector m_trait_detector;
+      list_item_detector m_temp_detector;
 
       std::string m_name;
       float m_gravity{};
       float m_temperature{};
+      int m_temp_level;
       int m_star_id{};
       int m_planet_id{};
       int m_primary_planet_id{};
@@ -255,6 +257,7 @@ namespace pp
          , m_flora_detector("Flora #")
          , m_atmosphere_detector("Keyword #")
          , m_trait_detector("Keyword #")
+         , m_temp_detector("Keyword #")
       {
 
       }
@@ -330,6 +333,18 @@ namespace pp
             }
             };
          m_trait_detector.process_line(line, m_traits, trait_generator);
+
+         const auto temp_generator = [](const std::vector<std::string_view>& lines, auto& target) -> void {
+            if (lines.size() == 1)
+            {
+               const auto name = get_between(lines[0], '<', '>');
+               if (name.starts_with("PlanetTemperature"))
+               {
+                  std::from_chars(name.data()+18, name.data()+19, target);
+               }
+            }
+            };
+         m_temp_detector.process_line(line, m_temp_level, temp_generator);
 
          std::string body_type_str;
          if(extract(line.m_line_content, "CNAM - Body type", body_type_str))
@@ -451,6 +466,7 @@ namespace pp
       formid m_formid;
       std::string m_name;
       float m_temperature{};
+      int m_temp_level;
       std::string m_gravity{};
       int m_fauna_count{};
       std::vector<flora> m_flora;
@@ -553,6 +569,7 @@ namespace pp
             .m_formid = value.m_formid,
             .m_name = value.m_name,
             .m_temperature = value.m_temperature,
+            .m_temp_level = value.m_temp_level,
             .m_gravity = std::format("{:.2f}", value.m_gravity),
             .m_fauna_count = static_cast<int>(value.m_animals.size()),
             .m_flora = get_plants(value.m_plants, flors),
@@ -619,6 +636,7 @@ namespace pp
       j["formid"] = as_big(p.m_formid);
       j["oxygen_amount"] = p.m_oxygen_amount;
       j["temperature"] = p.m_temperature;
+      j["temp_level"] = p.m_temp_level;
       j["gravity"] = p.m_gravity;
       j["traits"] = p.m_traits;
    }
@@ -660,6 +678,39 @@ auto main() -> int
    threads.emplace_back(pp::run<pp::flor>, "../../data/xdump_flora.txt", "FLOR", std::ref(flors));
    threads.clear();
    timer.emplace();
+
+   /* temp levels:
+      PlanetTemperature00DeepFreeze
+      PlanetTemperature01Frozen
+      PlanetTemperature02Cold
+      PlanetTemperature03Temperate
+      PlanetTemperature04Hot
+      PlanetTemperature05Scorched
+      PlanetTemperature06Inferno
+   */
+   // std::map<std::string, std::pair<float, float>> minmax;
+   // minmax["Deep Freeze"] = { 999.0f, -999.0f };
+   // minmax["Frozen"] = { 999.0f, -999.0f };
+   // minmax["Cold"] = { 999.0f, -999.0f };
+   // minmax["Temperate"] = { 999.0f, -999.0f };
+   // minmax["Hot"] = { 999.0f, -999.0f };
+   // minmax["Scorched"] = { 999.0f, -999.0f };
+   // minmax["Inferno"] = { 999.0f, -999.0f };
+   // for(const auto& p : pndts | std::views::values)
+   // {
+   //    for(auto& [key, value] : minmax)
+   //    {
+   //       if (p.m_temp_string == key)
+   //       {
+   //          value.first = std::min(value.first, p.m_temperature);
+   //          value.second = std::max(value.second, p.m_temperature);
+   //       }
+   //    }
+   // }
+   // for (const auto& [key, value] : minmax)
+   // {
+   //    printf(std::format("{}: {} to {}\n", key, value.first, value.second).c_str());
+   // }
 
    const std::unordered_map<int, star> universe = build_universe(lctns, stdts, pndts, bioms, flors);
 

@@ -1,0 +1,72 @@
+body
+    background: rgb(37,46,51)
+    color: white
+.planets, .moons
+    margin-left: 2em
+
+.biome
+    margin-left: 1em
+
+.system, .planet, .moon
+    margin-top: 1em
+
+
+.flora, .trait
+    margin-left: 1em
+
+
+.nav
+    color: red
+    text-transform: uppercase
+    display: flex
+
+.nav > *:not(:first-child):not(.debug):before
+    content: "→"
+    margin-left: 0.5em
+    margin-right: 0.5em
+
+.debug
+    margin-left: 1em
+
+ol
+    margin-top: 0
+    margin-bottom: 0
+    padding-left: 0
+
+.trait_img
+    height: 2em
+    margin-right: 0.5em
+
+.trait
+    display: flex
+    align-items: center
+
+
+.temperature[data-temp_lvl="0"]
+    color: rgb(34, 104, 255)
+    &::after
+        content: "(Deep Freeze)"
+.temperature[data-temp_lvl="1"]
+    color: rgb(34, 166, 255)
+    &::after
+        content: "(Frozen)"
+.temperature[data-temp_lvl="2"]
+    color: rgb(34, 255, 218)
+    &::after
+        content: "(Cold)"
+.temperature[data-temp_lvl="3"]
+    color: rgb(102, 255, 0)
+    &::after
+        content: "(Temperate)"
+.temperature[data-temp_lvl="4"]
+    color: rgb(255, 167, 34)
+    &::after
+        content: "(Hot)"
+.temperature[data-temp_lvl="5"]
+    color: rgb(255, 102, 0)
+    &::after
+        content: "(Scorched)"
+.temperature[data-temp_lvl="6"]
+    color: rgb(255, 0, 0)
+    &::after
+        content: "(Inferno)"
