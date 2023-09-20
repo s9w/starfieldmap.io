@@ -3,6 +3,7 @@ function notify(event) {
     let els = document.getElementById("bodies").children;
     let result_count = 0;
     for (let i = 0; i < els.length; i++) {
+        els[i].open = false;
         let condition = els[i].dataset.lowercase_name.includes(search_term);
         if(condition)
         {
@@ -12,6 +13,18 @@ function notify(event) {
         else
             els[i].classList.add("hidden");
     }
+
+    const expand_threshold = 30;
+    if(result_count < expand_threshold)
+    {
+        for (let i = 0; i < els.length; i++) {
+            if(els[i].classList.contains("hidden") == false)
+            {
+                els[i].open = true;
+            }
+        }
+    }
+
     document.getElementById("search_result").textContent = `${result_count} results`;
 }
 

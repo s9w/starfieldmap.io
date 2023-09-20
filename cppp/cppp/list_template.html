@@ -11,14 +11,19 @@
         <input style="width: 100%;" id="search" placeholder="Partial body name" autocomplete="off">
         <div id="search_result">1692 results</div>
         <div id="bodies">
+
             {% for body in bodies %}
-            <div id="{{body.name}}" data-lowercase_name="{{body.lowercase_name}}" data-type={{body.class}} class="{{body.class}}">
-                <div class="nav">
-                {% for nav_item in body.nav %}
-                    <div>{{nav_item}}</div>
-                {% endfor %}
+            <details id="{{body.name}}" data-lowercase_name="{{body.lowercase_name}}" data-type={{body.class}} class="{{body.class}}">
+                <summary>
+                    {% for nav_item in body.nav %}
+                        {% if loop.is_last %}
+                        <div class="last">{{nav_item}}</div>
+                        {% else %}
+                        <div>{{nav_item}}</div>
+                        {% endif %}
+                    {% endfor %}
                     <div class="debug">({{body.formid}})</div>
-                </div>
+                </summary>
                 <div class="quickfacts">
                     <span class="temperature" data-temp_lvl={{body.temp_level}}>{{body.temperature}}°C</span>
                     <span>; {{ body.gravity }}g; {{ body.oxygen_amount }}% O₂</span>
@@ -64,8 +69,9 @@
                     <div>No Traits</div>
                 {% endif %}
                 </div>
-            </div>
+            </details>
             {% endfor %}
+
         </div>
 	</body>
 </html>

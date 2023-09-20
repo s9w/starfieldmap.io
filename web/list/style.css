@@ -18,21 +18,39 @@ body {
   margin-left: 1em;
 }
 
-.nav {
-  color: salmon;
+summary {
+  color: gray;
   text-transform: uppercase;
-  display: flex;
   font-size: large;
+  padding: 0.2em;
+}
+summary > .last {
+  color: white;
 }
 
-.nav > *:not(:first-child):not(.debug):before {
-  content: "→";
-  margin-left: 0.5em;
-  margin-right: 0.5em;
+.quickfacts {
+  margin-top: 1em;
+}
+
+details summary {
+  cursor: pointer;
+}
+
+summary:hover {
+  background-color: rgba(255, 255, 255, 0.103);
+}
+
+summary > * {
+  display: inline;
+}
+
+summary > *:not(.last):not(.debug):after {
+  content: " → ";
 }
 
 .debug {
   margin-left: 1em;
+  color: rgba(255, 238, 0, 0.24);
 }
 
 ol {
