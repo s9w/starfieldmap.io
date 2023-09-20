@@ -238,7 +238,7 @@ namespace pp
 
       std::string m_name;
       float m_gravity{};
-      float m_temperature{};
+      int m_temperature{};
       int m_temp_level;
       int m_star_id{};
       int m_planet_id{};
@@ -465,7 +465,7 @@ namespace pp
    struct body {
       formid m_formid;
       std::string m_name;
-      float m_temperature{};
+      int m_temperature{};
       int m_temp_level;
       std::string m_gravity{};
       int m_fauna_count{};
