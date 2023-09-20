@@ -733,7 +733,7 @@ auto main() -> int
          planet_template_data["class"] = "planet";
 
          planet_template_data["nav"] = nlohmann::json::array();
-         planet_template_data["nav"].emplace_back(std::format("{} system", star.m_name));
+         planet_template_data["nav"].emplace_back(std::format("{} system (Level {})", star.m_name, star.m_level));
          planet_template_data["nav"].emplace_back(planet.m_name);
 
          template_data["bodies"].push_back(planet_template_data);
@@ -743,7 +743,7 @@ auto main() -> int
             moon_template_data["class"] = "moon";
 
             moon_template_data["nav"] = nlohmann::json::array();
-            moon_template_data["nav"].emplace_back(std::format("{} system", star.m_name));
+            moon_template_data["nav"].emplace_back(std::format("{} system (Level {})", star.m_name, star.m_level));
             moon_template_data["nav"].emplace_back(planet.m_name);
             moon_template_data["nav"].emplace_back(moon.m_name);
 
