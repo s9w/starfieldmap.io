@@ -9,6 +9,7 @@
 
 #include <cppp/tools.h>
 #include <boost/regex.hpp>
+#include <inja.hpp>
 
 namespace pp
 {
@@ -205,21 +206,6 @@ namespace pp
       return a.m_biome_ref == b.m_biome_ref;
    }
 
-   struct animal{
-      formid m_formid;
-   };
-   auto operator==(const animal& a, const animal& b) -> bool
-   {
-      return a.m_formid == b.m_formid;
-   }
-   struct plant{
-      formid m_formid;
-   };
-   auto operator==(const plant& a, const plant& b) -> bool
-   {
-      return a.m_formid == b.m_formid;
-   }
-
    enum class body_type{unset, planet, moon};
    struct pndt {
       formid m_formid{};
@@ -238,9 +224,9 @@ namespace pp
       int m_primary_planet_id{};
       body_type m_body_type = body_type::unset;
       std::vector<planet_biome_ref> m_biome_refs;
-      std::vector<animal> m_animal_refs;
-      std::vector<plant> m_flora_refs;
-      std::vector<float> m_oxygen_amount;
+      std::vector<formid> m_animals{};
+      std::vector<std::string> m_plants;
+      int m_oxygen_amount{};
       std::vector<std::string> m_traits;
 
       explicit pndt(const formid formid)
@@ -264,7 +250,7 @@ namespace pp
          extract(line.m_line_content, "Primary planet ID", m_primary_planet_id);
          extract(line.m_line_content, "Gravity", m_gravity);
 
-         const auto biome_generator = [](const std::vector<std::string_view>& lines) -> std::optional<planet_biome_ref> {
+         const auto biome_generator = [](const std::vector<std::string_view>& lines, auto& target) -> void {
             planet_biome_ref biome_ref;
             for (const auto& l : lines)
             {
@@ -272,53 +258,57 @@ namespace pp
                extract(l, "Biome reference", biome_ref.m_biome_ref);
                extract(l, "Resource gen override", biome_ref.m_resource_gen_override);
             }
-            return biome_ref;
+            if(std::ranges::find(target, biome_ref) == std::cend(target))
+               target.emplace_back(biome_ref);
          };
          m_biome_detector.process_line(line, m_biome_refs, biome_generator);
 
-         const auto animal_generator = [](const std::vector<std::string_view>& lines) -> std::optional<animal> {
+         const auto animal_generator = [](const std::vector<std::string_view>& lines, auto& target) -> void {
             pp_assert(lines.size() == 2);
-            return animal{.m_formid = get_formid(lines[1])};
+            const auto result = get_formid(lines[1]);
+            if (std::ranges::find(target, result) == std::cend(target))
+               target.emplace_back(result);
             };
-         m_animal_detector.process_line(line, m_animal_refs, animal_generator);
+         m_animal_detector.process_line(line, m_animals, animal_generator);
 
-         const auto flora_generator = [](const std::vector<std::string_view>& lines) -> std::optional<plant> {
-            std::string str;
-            plant result{};
+         const auto flora_generator = [](const std::vector<std::string_view>& lines, auto& target) -> void {
+            std::string buffer;
             for(const auto& l : lines)
             {
-               if(extract(l, "Model", str))
+               if(extract(l, "Model", buffer))
                {
-                  result.m_formid = get_formid(l);
+                  const std::string result(get_between(l, '\"', '\"'));
+                  if (std::ranges::find(target, result) == std::cend(target))
+                     target.emplace_back(result);
                }
             }
-            return result;
             };
-         m_flora_detector.process_line(line, m_flora_refs, flora_generator);
+         m_flora_detector.process_line(line, m_plants, flora_generator);
 
-         const auto keyword_generator = [](const std::vector<std::string_view>& lines) -> std::optional<float> {
+         const auto keyword_generator = [](const std::vector<std::string_view>& lines, auto& target) -> void {
             if (lines.size() == 1)
             {
                if (lines[0].find("PlanetAtmosphereType07LowO2") != std::string::npos)
-                  return 18.0f;
-               if (lines[0].find("PlanetAtmosphereType05O2") != std::string::npos)
-                  return 21.0f;
-               if (lines[0].find("PlanetAtmosphereType06HighO2") != std::string::npos)
-                  return 24.0f;
+                  target = 18;
+               else if (lines[0].find("PlanetAtmosphereType05O2") != std::string::npos)
+                  target = 21;
+               else if (lines[0].find("PlanetAtmosphereType06HighO2") != std::string::npos)
+                  target = 24;
             }
-
-            return std::nullopt;
             };
          m_atmosphere_detector.process_line(line, m_oxygen_amount, keyword_generator);
 
-         const auto trait_generator = [](const std::vector<std::string_view>& lines) -> std::optional<std::string> {
+         const auto trait_generator = [](const std::vector<std::string_view>& lines, auto& target) -> void {
             if (lines.size() == 1)
             {
                const auto name = get_between(lines[0], '<', '>');
-               if(name.starts_with("PlanetTrait"))
-                  return std::string(get_between(lines[0], '\"', '\"'));
+               if (name.starts_with("PlanetTrait"))
+               {
+                  std::string result(get_between(lines[0], '\"', '\"'));
+                  if (std::ranges::find(target, result) == std::cend(target))
+                     target.emplace_back(result);
+               }
             }
-            return std::nullopt;
             };
          m_trait_detector.process_line(line, m_traits, trait_generator);
 
@@ -364,7 +354,7 @@ namespace pp
          return false;
       }
 
-      static auto build_property(const std::vector<std::string_view>& lines) -> std::optional<property>
+      static auto build_property(const std::vector<std::string_view>& lines, std::vector<property>& target) -> void
       {
          const boost::regex pattern("Value (\\d) - (.+?): (.+)");
          std::string property_name;
@@ -392,7 +382,7 @@ namespace pp
             {
                if(match[2] == "FormID")
                {
-                  return std::nullopt;
+                  return;
                }
                float value{};
                if(match[2] == "Float")
@@ -408,15 +398,15 @@ namespace pp
          }
          if (fun_type == prop_function_type::not_set)
             std::terminate();
-         return(
-            property{
+         const property result{
                .m_function_type = fun_type,
                .m_property_name = property_name,
                .m_mult = value1,
                .m_add = value2,
                .m_step = step
-            }
-         );
+         };
+         if(std::ranges::find(target, result) == std::cend(target))
+            target.emplace_back(result);
       }
 
       auto process_line(const line_content& line) -> void
@@ -436,10 +426,10 @@ namespace pp
       formid m_formid;
       std::string m_name;
       float m_temperature{};
-      float m_gravity{};
-      std::vector<animal> m_fauna;
-      std::vector<plant> m_flora;
-      float m_oxygen_amount{};
+      std::string m_gravity{};
+      int m_fauna_count{};
+      std::vector<std::string> m_flora;
+      int m_oxygen_amount{};
       std::vector<biome> m_biomes;
       std::vector<std::string> m_traits;
    };
@@ -457,14 +447,6 @@ namespace pp
       std::string m_name;
       std::vector<planet> m_planets;
    };
-
-
-   auto get_oxygen_amount(const std::vector<float>& vec) -> float
-   {
-      if (vec.empty()) return 0.0f;
-      pp_assert(vec.size() == 1);
-      return vec[0];
-   }
 
    auto get_biomes(const std::vector<planet_biome_ref>& refs, const formid_map<pp::biom>& bioms) -> std::vector<biome>
    {
@@ -527,10 +509,10 @@ namespace pp
             .m_formid = value.m_formid,
             .m_name = value.m_name,
             .m_temperature = value.m_temperature,
-            .m_gravity = value.m_gravity,
-            .m_fauna = value.m_animal_refs,
-            .m_flora = value.m_flora_refs,
-            .m_oxygen_amount = get_oxygen_amount(value.m_oxygen_amount),
+            .m_gravity = std::format("{:.2f}", value.m_gravity),
+            .m_fauna_count = static_cast<int>(value.m_animals.size()),
+            .m_flora = value.m_plants,
+            .m_oxygen_amount = value.m_oxygen_amount,
             .m_biomes = get_biomes(value.m_biome_refs, bioms),
             .m_traits = value.m_traits
          };
@@ -590,7 +572,7 @@ namespace pp
 
       str += std::format(
          "{}{} ({}), {}C, {}g, {}% O2, flora: {}, fauna: {}; {} traits; {}\n",
-         indentation_str, b.m_name, as_big(b.m_formid), b.m_temperature, b.m_gravity, b.m_oxygen_amount, b.m_flora.size(), b.m_fauna.size(), b.m_traits.size(), biome_str
+         indentation_str, b.m_name, as_big(b.m_formid), b.m_temperature, b.m_gravity, b.m_oxygen_amount, b.m_flora.size(), b.m_fauna_count, b.m_traits.size(), biome_str
       );
    }
 
@@ -628,6 +610,46 @@ namespace pp
       file << str;
    }
 
+   void to_json(nlohmann::json& j, const formid& p) {
+      j = as_big(p);
+   }
+   void to_json(nlohmann::json& j, const biome& p) {
+      j["percentage"] = p.m_percentage;
+      j["name"] = p.m_name;
+   }
+   void to_json(nlohmann::json& j, const body& p) {
+      j["name"] = p.m_name;
+      j["biomes"] = p.m_biomes;
+      j["fauna_count"] = p.m_fauna_count;
+      j["flora"] = p.m_flora;
+      j["formid"] = as_big(p.m_formid);
+      j["oxygen_amount"] = p.m_oxygen_amount;
+      j["temperature"] = p.m_temperature;
+      j["gravity"] = p.m_gravity;
+      j["traits"] = p.m_traits;
+   }
+   void to_json(nlohmann::json& j, const planet& p) {
+      j["name"] = p.m_name;
+      j["biomes"] = p.m_biomes;
+      j["fauna_count"] = p.m_fauna_count;
+      j["flora"] = p.m_flora;
+      j["formid"] = as_big(p.m_formid);
+      j["oxygen_amount"] = p.m_oxygen_amount;
+      j["temperature"] = p.m_temperature;
+      j["gravity"] = p.m_gravity;
+      j["traits"] = p.m_traits;
+      j["moons"] = p.m_moons;
+   }
+   void to_json(nlohmann::json& j, const star& p) {
+      j["x"] = p.m_x;
+      j["y"] = p.m_y;
+      j["z"] = p.m_z;
+      j["name"] = p.m_name;
+      j["planets"] = p.m_planets;
+      j["formid"] = as_big(p.m_formid);
+      j["level"] = p.m_level;
+   }
+
 } // namespace pp
 
 
@@ -657,11 +679,28 @@ auto main() -> int
    
 
    const std::unordered_map<int, star> universe = build_universe(lctns, stdts, pndts, bioms);
-   print(universe);
+   // print(universe);
 
 
    [[maybe_unused]] const auto& narion = universe.at(88327);
    timer.reset();
+
+   std::ifstream f("../../data/label_shifts.json");
+   nlohmann::json shift_data = nlohmann::json::parse(f);
+
+   nlohmann::json template_data;
+   template_data["systems"] = std::vector<star>();
+   for (const auto& star : universe | std::views::values)
+   {
+      template_data["systems"].push_back(star);
+   }
+   // std::ofstream o("template_data.json");
+   // o << std::setw(4) << template_data << std::endl;
+
+   inja::Environment env;
+   const auto html_str = env.render_file("list_template.html", template_data);
+   std::ofstream out("../../web/list/index.html");
+   out << html_str;
 
    [[maybe_unused]] int end = 0;
 }

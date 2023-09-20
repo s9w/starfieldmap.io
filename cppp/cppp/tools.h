@@ -96,15 +96,13 @@ namespace pp{
          m_next_property_strings.reserve(10);
       }
       template<typename T>
-      auto process_line(const line_content& line, std::vector<T>& target, const auto& m_lambda) -> void
+      auto process_line(const line_content& line, T& target, const auto& m_lambda) -> void
       {
          if (line.m_line_content.starts_with(m_start_str))
          {
             if (m_next_property_strings.empty() == false)
             {
-               const auto result = m_lambda(m_next_property_strings);
-               if(result.has_value() && std::ranges::find(target, *result) == std::cend(target))
-                  target.emplace_back(*result);
+               m_lambda(m_next_property_strings, target);
 
                m_next_property_strings.clear();
             }
@@ -118,9 +116,7 @@ namespace pp{
             if (line.m_level <= m_in_property_level.value())
             {
                // end of this property because property list ends
-               const auto result = m_lambda(m_next_property_strings);
-               if (result.has_value() && std::ranges::find(target, *result) == std::cend(target))
-                  target.emplace_back(*result);
+               m_lambda(m_next_property_strings, target);
 
                m_in_property_level.reset();
                m_next_property_strings.clear();
