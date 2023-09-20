@@ -622,15 +622,15 @@ namespace pp
       j["gravity"] = p.m_gravity;
       j["traits"] = p.m_traits;
    }
-   // }
    void to_json(nlohmann::json& j, const star& p) {
-      j["x"] = p.m_x;
-      j["y"] = p.m_y;
-      j["z"] = p.m_z;
       j["name"] = p.m_name;
-      j["planets"] = p.m_planets;
       j["formid"] = as_big(p.m_formid);
       j["level"] = p.m_level;
+      j["planet_count"] = static_cast<int>(p.m_planets.size());
+      int moon_count = 0;
+      for (const auto& planet : p.m_planets)
+         moon_count += static_cast<int>(planet.m_moons.size());
+      j["moon_count"] = moon_count;
    }
 
 } // namespace pp
@@ -675,10 +675,7 @@ auto main() -> int
    template_data["systems"] = nlohmann::json{};
    for (const auto& star : universe | std::views::values)
    {
-      nlohmann::json system;
-      system["name"] = star.m_name;
-      system["level"] = star.m_level;
-      system["formid"] = star.m_formid;
+      nlohmann::json system(star);
       system["planets"] = nlohmann::json::array();
       for(const auto& planet : star.m_planets)
       {

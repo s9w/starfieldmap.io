@@ -9,8 +9,9 @@
 	<body>
         <div id="systems">
             {% for system in systems %}
-            <div data-name="{{ system.name }}" class=system>
-                <div class="name">{{ system.name }} system (Level {{system.level}}; {{system.formid}})</div>
+            <div id="{{ system.name }}" class=system>
+                <div class="name">{{ system.name }} system ({{system.formid}})</div>
+                <div>Level {{system.level}}; {{system.planet_count}} planets, {{system.moon_count}} moons</div>
                 
                 <div class="planets">
                     {% for planet in system.planets %}
