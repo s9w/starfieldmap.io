@@ -36,6 +36,7 @@ namespace pp{
    };
 
    auto get_indentation_level(const std::string_view& line) -> int;
+   auto get_lower(const std::string_view in) -> std::string;
 
    struct line_content {
       int m_level;

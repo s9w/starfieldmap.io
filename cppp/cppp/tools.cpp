@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <chrono>
+#include <algorithm>
 
 
 pp::ms_timer::ms_timer()
@@ -28,6 +29,15 @@ auto pp::get_indentation_level(const std::string_view& line) -> int
    while (line[i] == ' ')
       ++i;
    return i / 2;
+}
+
+
+auto pp::get_lower(const std::string_view in) -> std::string
+{
+   std::string result(in);
+   std::transform(result.begin(), result.end(), result.begin(),
+      [](unsigned char c) { return std::tolower(c); }); // ranges version causes ICE lol
+   return result;
 }
 
 

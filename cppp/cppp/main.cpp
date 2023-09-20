@@ -630,6 +630,7 @@ namespace pp
    }
    void to_json(nlohmann::json& j, const body& p) {
       j["name"] = p.m_name;
+      j["lowercase_name"] = get_lower(p.m_name);
       j["biomes"] = p.m_biomes;
       j["fauna_count"] = p.m_fauna_count;
       j["flora"] = p.m_flora;
