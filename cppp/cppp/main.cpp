@@ -216,7 +216,7 @@ namespace pp
    
 
    struct planet_biome_ref{
-      float m_percentage{};
+      int m_percentage{};
       formid m_biome_ref{};
       formid m_resource_gen_override{};
    };
@@ -452,7 +452,7 @@ namespace pp
    };
 
    struct biome{
-      float m_percentage{};
+      int m_percentage{};
       std::string m_name;
       formid m_formid;
    };
