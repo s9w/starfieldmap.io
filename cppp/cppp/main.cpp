@@ -3,7 +3,6 @@
 #include <iostream>
 #include <optional>
 #include <map>
-#include <variant>
 #include <vector>
 #include <chrono>
 #include <ranges>
@@ -232,7 +231,7 @@ namespace pp
       list_item_detector m_trait_detector;
 
       std::string m_name;
-      float m_gravity;
+      float m_gravity{};
       float m_temperature{};
       int m_star_id{};
       int m_planet_id{};
@@ -296,9 +295,6 @@ namespace pp
             return result;
             };
          m_flora_detector.process_line(line, m_flora_refs, flora_generator);
-
-         if (line.m_line_number == 531)
-            int stop = 0;
 
          const auto keyword_generator = [](const std::vector<std::string_view>& lines) -> std::optional<float> {
             if (lines.size() == 1)
