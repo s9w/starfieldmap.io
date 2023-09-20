@@ -26,6 +26,7 @@ summary {
 }
 summary > .last {
   color: white;
+  text-decoration: underline;
 }
 
 .quickfacts {
@@ -37,7 +38,7 @@ details summary {
 }
 
 summary:hover {
-  background-color: rgba(255, 255, 255, 0.103);
+  background-color: rgba(255, 255, 255, 0.13);
 }
 
 summary > * {
@@ -51,12 +52,6 @@ summary > *:not(.last):not(.debug):after {
 .debug {
   margin-left: 1em;
   color: rgba(255, 238, 0, 0.24);
-}
-
-ol {
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-left: 0;
 }
 
 .trait_img {
