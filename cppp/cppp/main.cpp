@@ -5,12 +5,11 @@
 #include <map>
 #include <variant>
 #include <vector>
-#include <regex>
 #include <chrono>
 #include <ranges>
 
 #include <cppp/tools.h>
-
+#include <boost/regex.hpp>
 
 namespace pp
 {
@@ -371,7 +370,7 @@ namespace pp
 
       static auto build_property(const std::vector<std::string_view>& lines) -> std::optional<property>
       {
-         const std::regex pattern("Value (\\d) - (.+?): (.+)");
+         const boost::regex pattern("Value (\\d) - (.+?): (.+)");
          std::string property_name;
          float value1{};
          float value2{};
@@ -391,9 +390,9 @@ namespace pp
             extract(line, "Step", step);
 
 
-            std::smatch match;
+            boost::smatch match;
             std::string line_str(line);
-            if(line.starts_with("Value ") && std::regex_match(line_str, match, pattern)) // TODO: wow this is atrocious
+            if(line.starts_with("Value ") && boost::regex_match(line_str, match, pattern)) // TODO: wow this is atrocious
             {
                if(match[2] == "FormID")
                {
