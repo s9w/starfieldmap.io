@@ -21,12 +21,18 @@
     <ClCompile Include="tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="list_output.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fundamentals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="list_output.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

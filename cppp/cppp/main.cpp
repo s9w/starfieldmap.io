@@ -7,9 +7,11 @@
 #include <chrono>
 #include <ranges>
 
+#include <cppp/list_output.h>
+
 #include <cppp/tools.h>
 #include <boost/regex.hpp>
-#include <inja.hpp>
+
 
 namespace pp
 {
@@ -451,43 +453,7 @@ namespace pp
       }
    };
 
-   struct biome{
-      int m_percentage{};
-      std::string m_name;
-      formid m_formid;
-   };
 
-   struct flora{
-      std::string m_name;
-      formid m_formid;
-   };
-
-   struct body {
-      formid m_formid;
-      std::string m_name;
-      int m_temperature{};
-      int m_temp_level;
-      std::string m_gravity{};
-      int m_fauna_count{};
-      std::vector<flora> m_flora;
-      int m_oxygen_amount{};
-      std::vector<biome> m_biomes;
-      std::vector<std::string> m_traits;
-   };
-   struct planet : body {
-      std::vector<body> m_moons;
-      int m_planet_id{};
-   };
-
-   struct star {
-      formid m_formid;
-      float m_x{};
-      float m_y{};
-      float m_z{};
-      int m_level{};
-      std::string m_name;
-      std::vector<planet> m_planets;
-   };
 
    auto get_biomes(const std::vector<planet_biome_ref>& refs, const formid_map<pp::biom>& bioms) -> std::vector<biome>
    {
@@ -616,41 +582,10 @@ namespace pp
       return starid_to_star;
    }
 
-   void to_json(nlohmann::json& j, const formid& p) {
-      j = as_big(p);
-   }
-   void to_json(nlohmann::json& j, const biome& p) {
-      j["percentage"] = p.m_percentage;
-      j["name"] = p.m_name;
-      j["formid"] = as_big(p.m_formid);
-   }
-   void to_json(nlohmann::json& j, const flora& p) {
-      j["name"] = p.m_name;
-      j["formid"] = as_big(p.m_formid);
-   }
-   void to_json(nlohmann::json& j, const body& p) {
-      j["name"] = p.m_name;
-      j["lowercase_name"] = get_lower(p.m_name);
-      j["biomes"] = p.m_biomes;
-      j["fauna_count"] = p.m_fauna_count;
-      j["flora"] = p.m_flora;
-      j["formid"] = as_big(p.m_formid);
-      j["oxygen_amount"] = p.m_oxygen_amount;
-      j["temperature"] = p.m_temperature;
-      j["temp_level"] = p.m_temp_level;
-      j["gravity"] = p.m_gravity;
-      j["traits"] = p.m_traits;
-   }
-   void to_json(nlohmann::json& j, const star& p) {
-      j["name"] = p.m_name;
-      j["formid"] = as_big(p.m_formid);
-      j["level"] = p.m_level;
-      j["planet_count"] = static_cast<int>(p.m_planets.size());
-      int moon_count = 0;
-      for (const auto& planet : p.m_planets)
-         moon_count += static_cast<int>(planet.m_moons.size());
-      j["moon_count"] = moon_count;
-   }
+   
+
+
+   
 
 } // namespace pp
 
@@ -680,82 +615,13 @@ auto main() -> int
    threads.clear();
    timer.emplace();
 
-   /* temp levels:
-      PlanetTemperature00DeepFreeze
-      PlanetTemperature01Frozen
-      PlanetTemperature02Cold
-      PlanetTemperature03Temperate
-      PlanetTemperature04Hot
-      PlanetTemperature05Scorched
-      PlanetTemperature06Inferno
-   */
-   // std::map<std::string, std::pair<float, float>> minmax;
-   // minmax["Deep Freeze"] = { 999.0f, -999.0f };
-   // minmax["Frozen"] = { 999.0f, -999.0f };
-   // minmax["Cold"] = { 999.0f, -999.0f };
-   // minmax["Temperate"] = { 999.0f, -999.0f };
-   // minmax["Hot"] = { 999.0f, -999.0f };
-   // minmax["Scorched"] = { 999.0f, -999.0f };
-   // minmax["Inferno"] = { 999.0f, -999.0f };
-   // for(const auto& p : pndts | std::views::values)
-   // {
-   //    for(auto& [key, value] : minmax)
-   //    {
-   //       if (p.m_temp_string == key)
-   //       {
-   //          value.first = std::min(value.first, p.m_temperature);
-   //          value.second = std::max(value.second, p.m_temperature);
-   //       }
-   //    }
-   // }
-   // for (const auto& [key, value] : minmax)
-   // {
-   //    printf(std::format("{}: {} to {}\n", key, value.first, value.second).c_str());
-   // }
-
    const std::unordered_map<int, star> universe = build_universe(lctns, stdts, pndts, bioms, flors);
-
-
-   [[maybe_unused]] const auto& narion = universe.at(88327);
    timer.reset();
 
-   std::ifstream f("../../data/label_shifts.json");
-   nlohmann::json shift_data = nlohmann::json::parse(f);
+   // std::ifstream f("../../data/label_shifts.json");
+   // nlohmann::json shift_data = nlohmann::json::parse(f);
 
-   nlohmann::json template_data;
-   inja::Environment env;
-   template_data["bodies"] = nlohmann::json::array();
-   for (const auto& star : universe | std::views::values)
-   {
-      for(const auto& planet : star.m_planets)
-      {
-         nlohmann::json planet_template_data = static_cast<body>(planet);
-         planet_template_data["class"] = "planet";
-
-         planet_template_data["nav"] = nlohmann::json::array();
-         planet_template_data["nav"].emplace_back(std::format("{} system (Level {})", star.m_name, star.m_level));
-         planet_template_data["nav"].emplace_back(planet.m_name);
-
-         template_data["bodies"].push_back(planet_template_data);
-         for(const auto& moon : planet.m_moons)
-         {
-            nlohmann::json moon_template_data = static_cast<body>(moon);
-            moon_template_data["class"] = "moon";
-
-            moon_template_data["nav"] = nlohmann::json::array();
-            moon_template_data["nav"].emplace_back(std::format("{} system (Level {})", star.m_name, star.m_level));
-            moon_template_data["nav"].emplace_back(planet.m_name);
-            moon_template_data["nav"].emplace_back(moon.m_name);
-
-            template_data["bodies"].push_back(moon_template_data);
-         }
-      }
-   }
-
-   
-   const auto html_str = env.render_file("list_template.html", template_data);
-   std::ofstream out("../../web/list/index.html");
-   out << html_str;
+   write_list(universe);
 
    [[maybe_unused]] int end = 0;
 }

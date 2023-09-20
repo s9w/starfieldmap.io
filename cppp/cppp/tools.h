@@ -6,7 +6,7 @@
 
 #include <cppp/fundamentals.h>
 
-#include <cppp/strong_type/strong_type.hpp>
+#include <strong_type/strong_type.hpp>
 
 
 namespace pp
@@ -46,6 +46,44 @@ namespace pp{
 
    auto get_formid(const std::string_view line) -> formid;
    constexpr auto get_between(const std::string_view line, const char left, const char right) -> std::string_view;
+
+   struct biome {
+      int m_percentage{};
+      std::string m_name;
+      formid m_formid;
+   };
+
+   struct flora {
+      std::string m_name;
+      formid m_formid;
+   };
+
+   struct body {
+      formid m_formid;
+      std::string m_name;
+      int m_temperature{};
+      int m_temp_level;
+      std::string m_gravity{};
+      int m_fauna_count{};
+      std::vector<flora> m_flora;
+      int m_oxygen_amount{};
+      std::vector<biome> m_biomes;
+      std::vector<std::string> m_traits;
+   };
+   struct planet : body {
+      std::vector<body> m_moons;
+      int m_planet_id{};
+   };
+
+   struct star {
+      formid m_formid;
+      float m_x{};
+      float m_y{};
+      float m_z{};
+      int m_level{};
+      std::string m_name;
+      std::vector<planet> m_planets;
+   };
 
    template<typename T>
    auto extract(
