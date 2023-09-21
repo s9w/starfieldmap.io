@@ -74,11 +74,6 @@ function set_infobox_star(star_name, star)
 
     let attrib_list_el = get_new_elem("div");
     attrib_list_el.id = "infobox_list";
-    attrib_list_el.appendChild(get_infobox_attrib_el("spectral_class", star["spectral_class"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("temperature", `${star["temperature"]}K`));
-    attrib_list_el.appendChild(get_infobox_attrib_el("mass", `${get_fixed_trunc(star["mass"], 2)}SM`));
-    attrib_list_el.appendChild(get_infobox_attrib_el("radius", star["radius"]));
-    attrib_list_el.appendChild(get_infobox_attrib_el("magnitude", get_fixed_trunc(star["magnitude"], 2)));
     attrib_list_el.appendChild(get_infobox_attrib_el("planets", star["planet_count"]));
     attrib_list_el.appendChild(get_infobox_attrib_el("moons", star["moon_count"]));
 
