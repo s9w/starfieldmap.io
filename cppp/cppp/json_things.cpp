@@ -52,7 +52,7 @@ void pp::to_json(nlohmann::json& j, const star& p) {
 }
 
 
-auto pp::write_list_payload(const std::vector<star>& universe) -> void
+auto pp::gen_web_list_data(const std::vector<star>& universe) -> void
 {
    nlohmann::json template_data;
    template_data["bodies"] = nlohmann::json::array();
@@ -83,7 +83,7 @@ auto pp::write_list_payload(const std::vector<star>& universe) -> void
       }
    }
    const auto json_str = template_data.dump();
-   write_binary_file("binary_payload", compress(json_str));
+   write_binary_file("../../web/list/web_list_data", compress(json_str));
 }
 
 
@@ -113,7 +113,7 @@ auto pp::gen_thesquirrels_output(const std::vector<star>& universe) -> void
 }
 
 
-auto pp::gen_web_output(const std::vector<star>& universe) -> void
+auto pp::gen_web_map_data(const std::vector<star>& universe) -> void
 {
    std::ifstream f_label_shifts("label_shifts.json");
    nlohmann::json shift_data = nlohmann::json::parse(f_label_shifts);
@@ -144,12 +144,12 @@ auto pp::gen_web_output(const std::vector<star>& universe) -> void
       }
       universe_json[star.m_name] = system_json;
    }
-   std::ofstream o("web_data_debugging.json");
+   std::ofstream o("web_map_data_debugging.json");
    o << std::setw(4) << universe_json << std::endl;
 
 
    const auto json_str = universe_json.dump();
-   write_binary_file("data", compress(json_str));
+   write_binary_file("../../web/web_map_data", compress(json_str));
 }
 
 

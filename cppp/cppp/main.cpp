@@ -178,12 +178,12 @@ auto main() -> int
    timer.emplace("squirrel output");
    gen_thesquirrels_output(universe);
 
-   timer.emplace("gen_web_output()");
-   gen_web_output(universe);
+   timer.emplace("gen_web_map_data()");
+   gen_web_map_data(universe);
 
 
-   timer.emplace("write_list_payload()");
-   write_list_payload(universe);
+   timer.emplace("gen_web_list_data()");
+   gen_web_list_data(universe);
 
    [[maybe_unused]] int end = 0;
 }

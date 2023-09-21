@@ -140,7 +140,7 @@ function get_loc()
 
 async function main()
 {
-    const compressedBuf = await fetch('binary_payload', {cache: "no-store"}).then(
+    const compressedBuf = await fetch('web_list_data', {cache: "no-store"}).then(
         res => res.arrayBuffer()
     );
     const compressed = new Uint8Array(compressedBuf);
