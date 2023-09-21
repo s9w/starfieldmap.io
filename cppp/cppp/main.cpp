@@ -8,6 +8,7 @@
 #include <ranges>
 
 #include <cppp/list_output.h>
+#include <nlohmann/json.hpp>
 
 #include <cppp/tools.h>
 #include <boost/regex.hpp>
@@ -502,7 +503,7 @@ namespace pp
       const formid_map<pp::pndt>& pndts,
       const formid_map<pp::biom>& bioms,
       const formid_map<pp::flor>& flors
-   ) -> std::unordered_map<int, star>
+   ) -> std::vector<star>
    {
       // Combine star-LCTN and STDT
       std::map<std::string, formid> name_to_lctn;
@@ -579,12 +580,37 @@ namespace pp
          starid_to_star.at(starid).m_planets = value;
       }
 
-      return starid_to_star;
+      std::vector<star> result;
+      result.reserve(starid_to_star.size());
+      for (const auto& star : starid_to_star | std::views::values)
+         result.push_back(star);
+      return result;
    }
 
-   
-
-
+   auto save_universe(const std::vector<star>& universe) -> void
+   {
+      nlohmann::json universe_json = nlohmann::json::array();
+      for (const auto& star : universe)
+      {
+         nlohmann::json system_json = star;
+         system_json["planets"] = nlohmann::json::array();
+         for (const auto& planet : star.m_planets)
+         {
+            // nlohmann::json planets = nlohmann::json::array();
+            nlohmann::json moons = nlohmann::json::array();
+            for (const auto& moon : planet.m_moons)
+            {
+               moons.push_back(moon);
+            }
+            nlohmann::json planet_json = planet;
+            planet_json["moons"] = moons;
+            system_json["planets"].push_back(planet_json);
+         }
+         universe_json.push_back(system_json);
+      }
+      std::ofstream o("universe.json");
+      o << std::setw(4) << universe_json << std::endl;
+   }
    
 
 } // namespace pp
@@ -615,7 +641,19 @@ auto main() -> int
    threads.clear();
    timer.emplace();
 
-   const std::unordered_map<int, star> universe = build_universe(lctns, stdts, pndts, bioms, flors);
+   const std::vector<star> universe = build_universe(lctns, stdts, pndts, bioms, flors);
+
+   save_universe(universe);
+
+   int max_moons = 0;
+   for(const auto& star : universe)
+   {
+      for(const auto& planet : star.m_planets)
+      {
+         max_moons = std::max(max_moons, static_cast<int>(planet.m_moons.size()));
+      }
+      
+   }
    timer.reset();
 
    // std::ifstream f("../../data/label_shifts.json");

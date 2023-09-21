@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cppp/tools.h>
+#include <vector>
 
 #include <nlohmann/json_fwd.hpp>
 
@@ -13,5 +14,5 @@ namespace pp
    void to_json(nlohmann::json& j, const body& p);
    void to_json(nlohmann::json& j, const star& p);
 
-   auto write_list(const std::unordered_map<int, star>& universe) -> void;
+   auto write_list(const std::vector<star>& universe) -> void;
 }

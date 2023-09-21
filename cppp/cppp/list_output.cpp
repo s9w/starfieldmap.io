@@ -53,12 +53,12 @@ void pp::to_json(nlohmann::json& j, const star& p) {
 }
 
 
-auto pp::write_list(const std::unordered_map<int, star>& universe) -> void
+auto pp::write_list(const std::vector<star>& universe) -> void
 {
    nlohmann::json template_data;
    inja::Environment env;
    template_data["bodies"] = nlohmann::json::array();
-   for (const auto& star : universe | std::views::values)
+   for (const auto& star : universe)
    {
       for (const auto& planet : star.m_planets)
       {
