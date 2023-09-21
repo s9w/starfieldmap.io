@@ -84,8 +84,9 @@ function set_infobox_star(star_name, star)
 
     infobox_el.appendChild(attrib_list_el);
 
-    let button = get_new_elem("button", "goto_system");
-    button.addEventListener("click", function(){activate_system(star_name); });
+    let button = get_new_elem("a", "goto_system");
+    button.href = `https://starfieldmap.io/list#${star_name}`;
+    // button.addEventListener("click", function(){activate_system(star_name); });
     infobox_el.appendChild(button);
 }
 
