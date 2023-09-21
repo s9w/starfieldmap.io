@@ -89,18 +89,6 @@ function set_infobox_star(star_name, star)
     infobox_el.appendChild(button);
 }
 
-function highlight_obj(obj, with_label, from_type)
-{
-    if(mode != "galaxy" && from_type == "star")
-        return;
-    obj.material.opacity = 1.0;
-}
-function unhighlight_obj(obj, with_label, from_type)
-{
-    if(mode != "galaxy" && from_type == "star")
-        return;
-    obj.material.opacity = 0.5;
-}
 
 function xy_zero_orbit_controls(orbit_controls, new_height)
 {
@@ -110,9 +98,6 @@ function xy_zero_orbit_controls(orbit_controls, new_height)
     orbit_controls.update();
 }
 
-// function get_visual_radius(real_radius){
-//     return 5.0;
-// }
 
 function add_system_body(color, radius, pos, receives_shadow)
 {
@@ -267,6 +252,13 @@ async function get_and_process_data(scene)
         add_galaxy_view_star(scene, get_vec3(value.position), key, value["extra_classes"]);
     }
     on_input();
+
+    let loc = get_loc();
+    if(loc)
+    {
+        if(loc in all_data)
+            on_label_click(loc);
+    }
 }
 
 function degrees_to_radians(degrees)
