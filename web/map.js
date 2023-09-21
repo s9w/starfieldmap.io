@@ -22,20 +22,6 @@ let last_activation_ts;
 let gridHelper;
 let map_center;
 
-function click_home()
-{
-    mode = "galaxy";
-    controls.reset();
-    controls.enableZoom = true;
-    planets_group.clear();
-    document.getElementById("system_indicator").classList.remove("active")
-    for (const star of star_group.children) {
-        star.visible = true;
-        star.children[0].visible = true;
-    }
-    gridHelper.visible = true;
-}
-
 
 function get_loc()
 {
@@ -171,8 +157,6 @@ function activate_system(star_name)
 {
     mode = "system";
     document.getElementById("infobox").classList.remove("active");
-    document.getElementById("system_indicator").classList.add("active")
-    document.getElementById("system_indicator").textContent = star_name;
     for (const star of star_group.children) {
         star.visible = false;
         star.children[0].visible = false;
@@ -427,7 +411,7 @@ function main()
         labelRenderer.render( scene, camera );
     }
     window.addEventListener( 'resize', onWindowResize, false );
-    document.getElementById("home_button").addEventListener("click", click_home);
+    // document.getElementById("home_button").addEventListener("click", click_home);
     document.getElementById("rot_x").addEventListener("input", on_input);
     document.getElementById("rot_y").addEventListener("input", on_input);
     document.getElementById("rot_z").addEventListener("input", on_input);
