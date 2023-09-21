@@ -40,6 +40,8 @@ body{
 }
 
 #infobox{
+    display: flex;
+    flex-direction: column;
     z-index: 99;
     position: absolute;
     left: 1em;
@@ -101,4 +103,19 @@ body{
 }
 body > input{
     display: none;
+}
+.button_group{
+    display: flex;
+}
+.button_group > *
+{
+    color: white;
+    padding: 0.5em;
+    margin: 0.2em;
+    cursor: pointer;
+    text-decoration: none;
+    background-color: rgba(200, 200, 200, 0.233);;
+}
+.button_group > *:hover{
+    background-color: rgba(200, 200, 200, 0.7);;
 }

@@ -52,10 +52,9 @@ function get_infobox_attrib_el(attrib_name, attrib_value)
 }
 
 
-// starfield seems to actually truncate numbers and not round them
-function get_fixed_trunc(number, digits)
+function close_infobox()
 {
-    return Math.trunc(number*Math.pow(10, digits))/Math.pow(10, digits)
+    document.getElementById("infobox").classList.remove("active");
 }
 
 
@@ -79,9 +78,18 @@ function set_infobox_star(star_name, star)
 
     infobox_el.appendChild(attrib_list_el);
 
-    let button = get_new_elem("a", "goto_system");
-    button.href = `https://starfieldmap.io/list#${star_name}`;
-    infobox_el.appendChild(button);
+
+    let button_div = get_new_elem("div", null, ["button_group"]);
+
+    let goto_button = get_new_elem("a", "Go to system");
+    goto_button.href = `https://starfieldmap.io/list#${star_name}`;
+    button_div.appendChild(goto_button);
+
+    let close_button = get_new_elem("div", "Close");
+    close_button.onclick = close_infobox;
+    button_div.appendChild(close_button);
+
+    infobox_el.appendChild(button_div);
 }
 
 function on_label_click(name)
