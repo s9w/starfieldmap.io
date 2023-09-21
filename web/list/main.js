@@ -1,12 +1,14 @@
-function expand()
+function expand_all()
 {
     let els = document.getElementById("bodies").children;
     for (let i = 0; i < els.length; i++)
         els[i].open = true;
 }
 
-function notify(event) {
-    let search_term = event.target.value.toLowerCase();
+
+function on_search_term_change()
+{
+    let search_term = document.querySelector("#search").value;
     let els = document.getElementById("bodies").children;
     let result_count = 0;
     for (let i = 0; i < els.length; i++) {
@@ -34,6 +36,7 @@ function notify(event) {
 
     document.getElementById("search_result").textContent = `${result_count} results`;
 }
+
 
 function get_new_elem(type, content=null, classlist=null)
 {
@@ -126,6 +129,14 @@ function build_site(bodies)
     });
 }
 
+function get_loc()
+{
+    let loc = decodeURI(new URL(document.URL).hash);
+    if(loc.startsWith("#"))
+        loc = loc.slice(1);
+    return loc;
+}
+
 
 async function main()
 {
@@ -136,11 +147,16 @@ async function main()
     var string = new TextDecoder().decode(fzstd.decompress(compressed));
     build_site(JSON.parse(string)["bodies"]);
 
-    document.querySelector("#search").addEventListener("input", notify, false);
+    document.querySelector("#search").addEventListener("input", on_search_term_change, false);
+    let loc = get_loc();
+    if(loc)
+    {
+        document.querySelector("#search").value = loc;
+        on_search_term_change();
+    }
 }
 
 
 window.addEventListener("load", () => {
     main();
   });
-  
