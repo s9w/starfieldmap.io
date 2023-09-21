@@ -11,6 +11,51 @@
 #include <zstd_lib/zstd.h>
 
 
+namespace
+{
+
+   auto get_file_str(const std::string_view& filename) -> std::string
+   {
+      std::ifstream t(filename.data());
+      t.seekg(0, std::ios::end);
+      const ptrdiff_t size = t.tellg();
+      std::string result;
+      result.resize(size);
+      t.seekg(0);
+      t.read(result.data(), size);
+      return result;
+   }
+   
+} // namespace {}
+
+
+pp::file_chopper::file_chopper(const std::string_view& filename): m_file_content(get_file_str(filename))
+{
+   m_lines.reserve(m_file_content.size() / 20);
+   ptrdiff_t last_newline_pos = -1;
+   int line_number = 1;
+   while (true)
+   {
+      const auto next_newline_pos = m_file_content.find('\n', last_newline_pos + 1);
+      if (next_newline_pos == std::string::npos)
+         break;
+      std::string_view content(m_file_content.data() + last_newline_pos + 1, m_file_content.data() + next_newline_pos);
+      const auto level = get_indentation_level(content);
+      content.remove_prefix(static_cast<size_t>(level) * 2);
+      m_lines.emplace_back(
+         line_content{
+            .m_level = level,
+            .m_line_content = content,
+            .m_line_number = line_number
+         }
+      );
+      last_newline_pos = static_cast<ptrdiff_t>(next_newline_pos);
+      ++line_number;
+   }
+   m_lines.shrink_to_fit();
+}
+
+
 pp::ms_timer::ms_timer()
    : m_t0(std::chrono::steady_clock::now())
 {

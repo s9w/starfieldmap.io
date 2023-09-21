@@ -24,6 +24,18 @@ struct std::hash<pp::formid>
 };
 
 namespace pp{
+   struct line_content {
+      int m_level;
+      std::string_view m_line_content;
+      int m_line_number;
+   };
+
+   struct file_chopper {
+      std::string m_file_content;
+      std::vector<line_content> m_lines;
+      explicit file_chopper(const std::string_view& filename);
+   };
+
    struct ms_timer{
       std::chrono::steady_clock::time_point m_t0;
       explicit ms_timer();
@@ -38,11 +50,7 @@ namespace pp{
    auto get_indentation_level(const std::string_view& line) -> int;
    auto get_lower(const std::string_view in) -> std::string;
 
-   struct line_content {
-      int m_level;
-      std::string_view m_line_content;
-      int m_line_number;
-   };
+   
 
    auto get_formid(const std::string_view line) -> formid;
    constexpr auto get_between(const std::string_view line, const char left, const char right) -> std::string_view;
