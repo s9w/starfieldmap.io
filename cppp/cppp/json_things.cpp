@@ -126,8 +126,10 @@ auto pp::gen_web_map_data(const std::vector<star>& universe) -> void
       nlohmann::json system_json = star;
       system_json["planets"] = nlohmann::json::array();
       system_json["position"] = nlohmann::json::array();
-      system_json["position"].push_back(star.m_x);
-      system_json["position"].push_back(star.m_y);
+
+      // TODO This was a historic fix and should be corrected together with the camera alignment in one go
+      system_json["position"].push_back(-star.m_x);
+      system_json["position"].push_back(-star.m_y);
       system_json["position"].push_back(star.m_z);
 
       system_json["extra_classes"] = nlohmann::json::array();
