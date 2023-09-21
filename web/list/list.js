@@ -8,12 +8,12 @@ function expand_all()
 
 function on_search_term_change()
 {
-    let search_term = document.querySelector("#search").value;
+    let search_term = document.querySelector("#search").value.toLowerCase();
     let els = document.getElementById("bodies").children;
     let result_count = 0;
     for (let i = 0; i < els.length; i++) {
         els[i].open = false;
-        let condition = els[i].dataset.lowercase_name.includes(search_term);
+        let condition = els[i].dataset.lowercase_name.includes(search_term) | els[i].dataset.lowercase_star_name.includes(search_term);
         if(condition)
         {
             els[i].classList.remove("hidden");
@@ -55,6 +55,7 @@ function build_site(bodies)
         let details_elem = get_new_elem("details");
         details_elem.id = body.name;
         details_elem.dataset.lowercase_name = body.name.toLowerCase();
+        details_elem.dataset.lowercase_star_name = body.star_name.toLowerCase();
         details_elem.dataset.type = body.class;
         details_elem.classList.add(body.class);
 

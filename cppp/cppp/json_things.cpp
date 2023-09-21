@@ -62,6 +62,7 @@ auto pp::gen_web_list_data(const std::vector<star>& universe) -> void
       {
          nlohmann::json planet_template_data = static_cast<body>(planet);
          planet_template_data["class"] = "planet";
+         planet_template_data["star_name"] = star.m_name;
 
          planet_template_data["nav"] = nlohmann::json::array();
          planet_template_data["nav"].emplace_back(std::format("{} system (Level {})", star.m_name, star.m_level));
@@ -72,6 +73,7 @@ auto pp::gen_web_list_data(const std::vector<star>& universe) -> void
          {
             nlohmann::json moon_template_data = static_cast<body>(moon);
             moon_template_data["class"] = "moon";
+            moon_template_data["star_name"] = star.m_name;
 
             moon_template_data["nav"] = nlohmann::json::array();
             moon_template_data["nav"].emplace_back(std::format("{} system (Level {})", star.m_name, star.m_level));
