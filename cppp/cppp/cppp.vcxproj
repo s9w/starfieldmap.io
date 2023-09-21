@@ -91,6 +91,11 @@
     <ClInclude Include="list_output.h" />
     <ClInclude Include="tools.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\zstd_lib\zstd_lib.vcxproj">
+      <Project>{6cceda39-1b7f-4525-b662-7149f45f589e}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

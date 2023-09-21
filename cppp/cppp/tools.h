@@ -47,6 +47,13 @@ namespace pp{
    auto get_formid(const std::string_view line) -> formid;
    constexpr auto get_between(const std::string_view line, const char left, const char right) -> std::string_view;
 
+   auto compress(const std::vector<std::byte>& src) -> std::vector<std::byte>;
+   auto compress(const std::string& src) -> std::vector<std::byte>;
+   auto write_binary_file(
+      const std::string_view filename,
+      const std::vector<std::byte>& vec
+   ) -> void;
+
    struct biome {
       int m_percentage{};
       std::string m_name;

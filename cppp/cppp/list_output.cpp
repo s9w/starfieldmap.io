@@ -2,9 +2,7 @@
 
 #include <cppp/tools.h>
 
-#include <inja.hpp>
-
-
+#include <nlohmann/json.hpp>
 
 namespace
 {
@@ -30,7 +28,6 @@ void pp::to_json(nlohmann::json& j, const flora& p) {
 }
 void pp::to_json(nlohmann::json& j, const body& p) {
    j["name"] = p.m_name;
-   j["lowercase_name"] = get_lower(p.m_name);
    j["biomes"] = p.m_biomes;
    j["fauna_count"] = p.m_fauna_count;
    j["flora"] = p.m_flora;
@@ -56,7 +53,6 @@ void pp::to_json(nlohmann::json& j, const star& p) {
 auto pp::write_list(const std::vector<star>& universe) -> void
 {
    nlohmann::json template_data;
-   inja::Environment env;
    template_data["bodies"] = nlohmann::json::array();
    for (const auto& star : universe)
    {
@@ -84,9 +80,6 @@ auto pp::write_list(const std::vector<star>& universe) -> void
          }
       }
    }
-
-
-   const auto html_str = env.render_file("list_template.html", template_data);
-   std::ofstream out("../../web/list/index.html");
-   out << html_str;
+   const auto json_str = template_data.dump();
+   write_binary_file("binary_payload", compress(json_str));
 }

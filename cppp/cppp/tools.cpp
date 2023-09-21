@@ -6,6 +6,9 @@
 #include <iostream>
 #include <chrono>
 #include <algorithm>
+#include <fstream>
+
+#include <zstd_lib/zstd.h>
 
 
 pp::ms_timer::ms_timer()
@@ -44,6 +47,37 @@ auto pp::get_lower(const std::string_view in) -> std::string
 auto pp::get_formid(const std::string_view line) -> formid
 {
    return from_big(get_between(line, '[', ']'));
+}
+
+
+auto pp::compress(const std::vector<std::byte>& src) -> std::vector<std::byte>
+{
+   std::vector<std::byte> result;
+   const auto bound = ZSTD_compressBound(src.size());
+   result.resize(bound);
+   const auto compressed_size = ZSTD_compress(result.data(), result.size(), src.data(), src.size(), 5);
+   result.resize(compressed_size);
+   return result;
+}
+
+
+auto pp::compress(const std::string& src) -> std::vector<std::byte>
+{
+   std::vector<std::byte> bytes;
+   bytes.resize(src.size());
+   std::memcpy(bytes.data(), src.data(), src.size());
+   return compress(bytes);
+}
+
+auto pp::write_binary_file(
+   const std::string_view filename,
+   const std::vector<std::byte>& vec
+) -> void
+{
+   std::ofstream stream(filename.data(), std::ios::out | std::ios::binary);
+   const char* ptr = std::bit_cast<const char*>(vec.data());
+   stream.write(ptr, static_cast<std::streamsize>(vec.size()));
+   stream.close();
 }
 
 
