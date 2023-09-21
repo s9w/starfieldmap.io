@@ -36,6 +36,16 @@ function click_home()
     gridHelper.visible = true;
 }
 
+
+function get_loc()
+{
+    let loc = decodeURI(new URL(document.URL).hash);
+    if(loc.startsWith("#"))
+        loc = loc.slice(1);
+    return loc;
+}
+
+
 function get_new_elem(type, content=null, classlist=null)
 {
     let result = document.createElement(type);
@@ -45,6 +55,7 @@ function get_new_elem(type, content=null, classlist=null)
         result.classList = classlist;
     return result;
 }
+
 
 function get_infobox_attrib_el(attrib_name, attrib_value)
 {
