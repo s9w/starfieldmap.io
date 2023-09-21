@@ -199,14 +199,6 @@ function on_label_click(name)
 
     // activate_system(name);
 }
-function on_label_mouseover(event, name)
-{
-    highlight_obj(name_to_obj[name], false, event.target.dataset.type);
-}
-function on_label_mouseout(event, name)
-{
-    unhighlight_obj(name_to_obj[name], false, event.target.dataset.type);
-}
 
 function on_container_click()
 {
@@ -234,8 +226,6 @@ function add_galaxy_view_star(scene, position, name, extra_classes)
 
     const text_div_el = document.createElement( 'div' );
     text_div_el.addEventListener('click', function(){on_label_click(name)} );
-    text_div_el.addEventListener('mouseover', function(ev){on_label_mouseover(ev, name)} );
-    text_div_el.addEventListener('mouseout', function(ev){on_label_mouseout(ev, name)} );
     text_div_el.className = 'label';
     text_div_el.textContent = name;
     text_div_el.dataset.type = "star";
@@ -411,7 +401,6 @@ function main()
         labelRenderer.render( scene, camera );
     }
     window.addEventListener( 'resize', onWindowResize, false );
-    // document.getElementById("home_button").addEventListener("click", click_home);
     document.getElementById("rot_x").addEventListener("input", on_input);
     document.getElementById("rot_y").addEventListener("input", on_input);
     document.getElementById("rot_z").addEventListener("input", on_input);
