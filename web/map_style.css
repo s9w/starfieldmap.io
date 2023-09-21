@@ -114,8 +114,8 @@ body > input{
     margin: 0.2em;
     cursor: pointer;
     text-decoration: none;
-    background-color: rgba(200, 200, 200, 0.233);;
+    background-color: rgba(200, 200, 200, 0.233);
 }
 .button_group > *:hover{
-    background-color: rgba(200, 200, 200, 0.7);;
+    background-color: rgba(200, 200, 200, 0.7);
 }

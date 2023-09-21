@@ -13,6 +13,8 @@ body
     border-style: solid
     border-color: rgb(129, 129, 129)
     padding: 1em
+    display: flex
+    flex-direction: column
 
 .flora, .trait, .biome
     margin-left: 1em
@@ -83,3 +85,13 @@ summary > *:not(.last):not(.debug):after
 
 .hidden
     display: none
+
+.goto_map_button
+    color: white
+    padding: 0.5em
+    margin: 0.2em
+    cursor: pointer
+    text-decoration: none
+    background-color: rgba(200, 200, 200, 0.233)
+    &:hover
+        background-color: rgba(200, 200, 200, 0.7)

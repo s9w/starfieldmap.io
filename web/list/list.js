@@ -126,6 +126,10 @@ function build_site(bodies)
         details_elem.appendChild(traits_elem);
 
 
+        let goto_map_button = get_new_elem("a", "Show system on map", ["goto_map_button"]);
+        goto_map_button.href = `https://starfieldmap.io#${body.star_name}`;
+        details_elem.appendChild(goto_map_button);
+
         document.getElementById("bodies").appendChild(details_elem);
     });
 }
