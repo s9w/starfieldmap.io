@@ -14,5 +14,7 @@ namespace pp
    void to_json(nlohmann::json& j, const body& p);
    void to_json(nlohmann::json& j, const star& p);
 
-   auto write_list(const std::vector<star>& universe) -> void;
+   auto write_list_payload(const std::vector<star>& universe) -> void;
+   auto gen_thesquirrels_output(const std::vector<star>& universe) -> void;
+   auto gen_web_output(const std::vector<star>& universe) -> void;
 }

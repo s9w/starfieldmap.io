@@ -7,8 +7,7 @@
 #include <chrono>
 #include <ranges>
 
-#include <cppp/list_output.h>
-#include <nlohmann/json.hpp>
+#include <cppp/json_things.h>
 
 #include <cppp/tools.h>
 #include <boost/regex.hpp>
@@ -587,74 +586,6 @@ namespace pp
       return result;
    }
 
-
-   auto gen_thesquirrels_output(const std::vector<star>& universe) -> void
-   {
-      nlohmann::json universe_json = nlohmann::json::array();
-      for (const auto& star : universe)
-      {
-         nlohmann::json system_json = star;
-         system_json["planets"] = nlohmann::json::array();
-         for (const auto& planet : star.m_planets)
-         {
-            // nlohmann::json planets = nlohmann::json::array();
-            nlohmann::json moons = nlohmann::json::array();
-            for (const auto& moon : planet.m_moons)
-            {
-               moons.push_back(moon);
-            }
-            nlohmann::json planet_json = planet;
-            planet_json["moons"] = moons;
-            system_json["planets"].push_back(planet_json);
-         }
-         universe_json.push_back(system_json);
-      }
-      std::ofstream o("universe.json");
-      o << std::setw(4) << universe_json << std::endl;
-   }
-
-
-   auto gen_web_output(const std::vector<star>& universe) -> void
-   {
-      std::ifstream f_label_shifts("label_shifts.json");
-      nlohmann::json shift_data = nlohmann::json::parse(f_label_shifts);
-
-      nlohmann::json universe_json;
-      for (const auto& star : universe)
-      {
-         nlohmann::json system_json = star;
-         system_json["planets"] = nlohmann::json::array();
-         system_json["position"] = nlohmann::json::array();
-         system_json["position"].push_back(star.m_x);
-         system_json["position"].push_back(star.m_y);
-         system_json["position"].push_back(star.m_z);
-
-         system_json["extra_classes"] = nlohmann::json::array();
-         if (shift_data.contains(star.m_name))
-            system_json["extra_classes"].push_back(shift_data[star.m_name]);
-         for (const auto& planet : star.m_planets)
-         {
-            nlohmann::json moons = nlohmann::json::array();
-            for (const auto& moon : planet.m_moons)
-            {
-               moons.push_back(moon);
-            }
-            nlohmann::json planet_json = planet;
-            planet_json["moons"] = moons;
-            system_json["planets"].push_back(planet_json);
-         }
-         universe_json[star.m_name] = system_json;
-      }
-      std::ofstream o("web_data_debugging.json");
-      o << std::setw(4) << universe_json << std::endl;
-
-
-      const auto json_str = universe_json.dump();
-      write_binary_file("data", compress(json_str));
-
-   }
-   
-
 } // namespace pp
 
 
@@ -701,7 +632,7 @@ auto main() -> int
 
    
 
-   write_list(universe);
+   write_list_payload(universe);
 
    [[maybe_unused]] int end = 0;
 }
