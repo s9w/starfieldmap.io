@@ -85,11 +85,13 @@
     <ClCompile Include="json_things.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="tools.cpp" />
+    <ClCompile Include="xedit_parsing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fundamentals.h" />
     <ClInclude Include="json_things.h" />
     <ClInclude Include="tools.h" />
+    <ClInclude Include="xedit_parsing.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\zstd_lib\zstd_lib.vcxproj">

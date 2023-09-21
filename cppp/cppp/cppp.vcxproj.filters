@@ -21,7 +21,10 @@
     <ClCompile Include="tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="list_output.cpp">
+    <ClCompile Include="json_things.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xedit_parsing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,7 +35,10 @@
     <ClInclude Include="fundamentals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="list_output.h">
+    <ClInclude Include="json_things.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xedit_parsing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
