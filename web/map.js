@@ -86,94 +86,7 @@ function set_infobox_star(star_name, star)
 
     let button = get_new_elem("a", "goto_system");
     button.href = `https://starfieldmap.io/list#${star_name}`;
-    // button.addEventListener("click", function(){activate_system(star_name); });
     infobox_el.appendChild(button);
-}
-
-
-function xy_zero_orbit_controls(orbit_controls, new_height)
-{
-    let cam = orbit_controls.object;
-    cam.position.set(0, new_height, new_height);
-    orbit_controls.target.set(0, orbit_controls.target.y, 0);
-    orbit_controls.update();
-}
-
-
-function add_system_body(color, radius, pos, receives_shadow)
-{
-    const geometry = new THREE.SphereGeometry( radius, 24, 8 );
-    let material;
-    if(receives_shadow == false)
-        material = new THREE.MeshBasicMaterial( { color: color } ); 
-    else
-        material = new THREE.MeshStandardMaterial( { color: color } ); 
-    const sphere = new THREE.Mesh( geometry, material );
-    sphere.receiveShadow = receives_shadow;
-    planets_group.add( sphere );
-    sphere.position.set(pos.x, pos.y, pos.z);
-}
-
-
-function add_planet_orbit(center_vec3, radius, target_group)
-{
-    let line_points = [];
-    const n = 64;
-    for (let i = 0; i < n; i++)
-    {
-        const angle = 1.0*i/(n-1)*2.0*Math.PI;
-        line_points.push(
-            center_vec3.x + radius*Math.cos(angle),
-            center_vec3.y,
-            center_vec3.z + radius*Math.sin(angle)
-            );
-    }
-
-    let line_geometry = new LineGeometry();
-    line_geometry.setPositions( line_points );
-    let line_material = new LineMaterial({color: 0xffffff, linewidth: 0.0005});
-    line_material.transparent = true;
-    line_material.opacity = 0.4;
-    let rings_obj = new Line2( line_geometry, line_material);
-    target_group.add(rings_obj)
-}
-
-
-function activate_system(star_name)
-{
-    mode = "system";
-    document.getElementById("infobox").classList.remove("active");
-    for (const star of star_group.children) {
-        star.visible = false;
-        star.children[0].visible = false;
-    }
-    gridHelper.visible = false;
-    controls.saveState();
-    controls.enableZoom = true;
-    xy_zero_orbit_controls(controls, 100.0);
-
-    planets_group.clear();
-    let planet_index = 0;
-    for (const [key, planet] of Object.entries(all_data[star_name]["planets"]))
-    {
-        let dist_from_sun = 10.0 * (planet_index + 1);
-        let planet_pos = new THREE.Vector3(dist_from_sun * Math.cos(planet["start_angle"]), 0.0, dist_from_sun * Math.sin(planet["start_angle"]) );
-        add_system_body(0x407945, 4, planet_pos, true);
-        add_planet_orbit(new THREE.Vector3(), dist_from_sun, planets_group);
-        ++planet_index;
-        console.log("planet_pos: " + planet_pos.toArray());
-
-        for (const [moon_key, moon] of Object.entries(planet["moons"]))
-        {
-            let distance_from_planet = 6.0;
-            let moon_pos = new THREE.Vector3();
-            moon_pos.copy(planet_pos); // JS is absolutely insane
-            moon_pos.add(new THREE.Vector3(distance_from_planet * Math.cos(moon["start_angle"]), 0.0, distance_from_planet * Math.sin(moon["start_angle"]) ) );
-            add_system_body(0x808080, 1.5, moon_pos, true);
-        }
-    }
-    add_system_body(0xffff80, 4, new THREE.Vector3(), false);
-    scene.add( planets_group );
 }
 
 function on_label_click(name)
@@ -182,15 +95,7 @@ function on_label_click(name)
     set_infobox_star(name, all_data[name]);
     document.getElementById("infobox").classList.add("active");
     last_activation_ts = Date.now();
-
-    // activate_system(name);
 }
-
-// function on_container_click()
-// {
-//     if((Date.now() - last_activation_ts) > 200)
-//         document.getElementById("infobox").classList.remove("active");
-// }
 
 
 
@@ -410,7 +315,6 @@ function onWindowResize() {
     labelRenderer.setSize( container.clientWidth, container.clientHeight );
 }
 
-// labelRenderer.domElement.addEventListener( 'click', on_container_click );
 document.addEventListener( 'mousemove', onPointerMove );
 window.addEventListener("load", (event) => {
     main();
