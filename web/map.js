@@ -186,11 +186,11 @@ function on_label_click(name)
     // activate_system(name);
 }
 
-function on_container_click()
-{
-    if((Date.now() - last_activation_ts) > 200)
-        document.getElementById("infobox").classList.remove("active");
-}
+// function on_container_click()
+// {
+//     if((Date.now() - last_activation_ts) > 200)
+//         document.getElementById("infobox").classList.remove("active");
+// }
 
 
 
@@ -410,7 +410,7 @@ function onWindowResize() {
     labelRenderer.setSize( container.clientWidth, container.clientHeight );
 }
 
-labelRenderer.domElement.addEventListener( 'click', on_container_click );
+// labelRenderer.domElement.addEventListener( 'click', on_container_click );
 document.addEventListener( 'mousemove', onPointerMove );
 window.addEventListener("load", (event) => {
     main();
