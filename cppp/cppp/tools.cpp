@@ -56,8 +56,9 @@ pp::file_chopper::file_chopper(const std::string_view& filename): m_file_content
 }
 
 
-pp::ms_timer::ms_timer()
+pp::ms_timer::ms_timer(const std::string_view msg)
    : m_t0(std::chrono::steady_clock::now())
+   , m_msg(msg)
 {
    
 }
@@ -67,7 +68,7 @@ pp::ms_timer::~ms_timer()
 {
    const auto t1 = std::chrono::steady_clock::now();
    const auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - m_t0);
-   std::cout << "ms: " << dt << "\n";
+   printf(std::format("{}: {}\n", m_msg, dt).c_str());
 }
 
 

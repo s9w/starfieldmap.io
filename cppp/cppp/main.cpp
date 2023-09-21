@@ -154,7 +154,7 @@ auto main() -> int
 {
    using namespace pp;
    std::optional<ms_timer> timer;
-   timer.emplace();
+   timer.emplace("xedit parsing");
 
    formid_map<pp::lctn> lctns;
    formid_map<pp::omod> omods;
@@ -164,33 +164,25 @@ auto main() -> int
    formid_map<pp::flor> flors;
    std::vector<std::jthread> threads;
    threads.reserve(10);
-   threads.emplace_back(pp::run<pp::lctn>, "../../data/xdump_lctn.txt", "LCTN", std::ref(lctns));
-   threads.emplace_back(pp::run<pp::stdt>, "../../data/xdump_stars.txt", "STDT", std::ref(stdts));
-   threads.emplace_back(pp::run<pp::pndt>, "../../data/xdump_planets.txt", "PNDT", std::ref(pndts));
-   threads.emplace_back(pp::run<pp::omod>, "../../data/xdump_omod.txt", "OMOD", std::ref(omods));
-   threads.emplace_back(pp::run<pp::biom>, "../../data/xdump_biomes.txt", "BIOM", std::ref(bioms));
-   threads.emplace_back(pp::run<pp::flor>, "../../data/xdump_flora.txt", "FLOR", std::ref(flors));
+   threads.emplace_back(pp::parse_xedit_output<pp::lctn>, "../../data/xdump_lctn.txt", "LCTN", std::ref(lctns));
+   threads.emplace_back(pp::parse_xedit_output<pp::stdt>, "../../data/xdump_stars.txt", "STDT", std::ref(stdts));
+   threads.emplace_back(pp::parse_xedit_output<pp::pndt>, "../../data/xdump_planets.txt", "PNDT", std::ref(pndts));
+   threads.emplace_back(pp::parse_xedit_output<pp::omod>, "../../data/xdump_omod.txt", "OMOD", std::ref(omods));
+   threads.emplace_back(pp::parse_xedit_output<pp::biom>, "../../data/xdump_biomes.txt", "BIOM", std::ref(bioms));
+   threads.emplace_back(pp::parse_xedit_output<pp::flor>, "../../data/xdump_flora.txt", "FLOR", std::ref(flors));
    threads.clear();
-   timer.emplace();
 
+   timer.emplace("universe building");
    const std::vector<star> universe = build_universe(lctns, stdts, pndts, bioms, flors);
 
+   timer.emplace("squirrel output");
    gen_thesquirrels_output(universe);
+
+   timer.emplace("gen_web_output()");
    gen_web_output(universe);
 
-   int max_moons = 0;
-   for(const auto& star : universe)
-   {
-      for(const auto& planet : star.m_planets)
-      {
-         max_moons = std::max(max_moons, static_cast<int>(planet.m_moons.size()));
-      }
-      
-   }
-   timer.reset();
 
-   
-
+   timer.emplace("write_list_payload()");
    write_list_payload(universe);
 
    [[maybe_unused]] int end = 0;

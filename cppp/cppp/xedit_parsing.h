@@ -19,7 +19,7 @@ namespace pp {
 
 
    template<fillable T>
-   auto run(const std::string_view& filename, const std::string_view name, formid_map<T>& map) -> void
+   auto parse_xedit_output(const std::string_view& filename, const std::string_view name, formid_map<T>& map) -> void
    {
       const file_chopper chopper(filename);
       std::optional<T> next_obj;

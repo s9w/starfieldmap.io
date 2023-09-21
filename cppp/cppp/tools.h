@@ -38,7 +38,8 @@ namespace pp{
 
    struct ms_timer{
       std::chrono::steady_clock::time_point m_t0;
-      explicit ms_timer();
+      std::string m_msg;
+      explicit ms_timer(const std::string_view msg);
       ~ms_timer();
 
       ms_timer(const ms_timer&) = delete;
