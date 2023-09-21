@@ -587,7 +587,8 @@ namespace pp
       return result;
    }
 
-   auto save_universe(const std::vector<star>& universe) -> void
+
+   auto gen_thesquirrels_output(const std::vector<star>& universe) -> void
    {
       nlohmann::json universe_json = nlohmann::json::array();
       for (const auto& star : universe)
@@ -610,6 +611,47 @@ namespace pp
       }
       std::ofstream o("universe.json");
       o << std::setw(4) << universe_json << std::endl;
+   }
+
+
+   auto gen_web_output(const std::vector<star>& universe) -> void
+   {
+      std::ifstream f_label_shifts("label_shifts.json");
+      nlohmann::json shift_data = nlohmann::json::parse(f_label_shifts);
+
+      nlohmann::json universe_json;
+      for (const auto& star : universe)
+      {
+         nlohmann::json system_json = star;
+         system_json["planets"] = nlohmann::json::array();
+         system_json["position"] = nlohmann::json::array();
+         system_json["position"].push_back(star.m_x);
+         system_json["position"].push_back(star.m_y);
+         system_json["position"].push_back(star.m_z);
+
+         system_json["extra_classes"] = nlohmann::json::array();
+         if (shift_data.contains(star.m_name))
+            system_json["extra_classes"].push_back(shift_data[star.m_name]);
+         for (const auto& planet : star.m_planets)
+         {
+            nlohmann::json moons = nlohmann::json::array();
+            for (const auto& moon : planet.m_moons)
+            {
+               moons.push_back(moon);
+            }
+            nlohmann::json planet_json = planet;
+            planet_json["moons"] = moons;
+            system_json["planets"].push_back(planet_json);
+         }
+         universe_json[star.m_name] = system_json;
+      }
+      std::ofstream o("web_data_debugging.json");
+      o << std::setw(4) << universe_json << std::endl;
+
+
+      const auto json_str = universe_json.dump();
+      write_binary_file("data", compress(json_str));
+
    }
    
 
@@ -643,7 +685,8 @@ auto main() -> int
 
    const std::vector<star> universe = build_universe(lctns, stdts, pndts, bioms, flors);
 
-   save_universe(universe);
+   gen_thesquirrels_output(universe);
+   gen_web_output(universe);
 
    int max_moons = 0;
    for(const auto& star : universe)
@@ -656,8 +699,7 @@ auto main() -> int
    }
    timer.reset();
 
-   // std::ifstream f("../../data/label_shifts.json");
-   // nlohmann::json shift_data = nlohmann::json::parse(f);
+   
 
    write_list(universe);
 
